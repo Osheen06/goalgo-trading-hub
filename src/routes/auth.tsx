@@ -43,6 +43,7 @@ function AuthPage() {
 
   // Single-trader deployment: registration closes once the owner account exists.
   const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
+  const [googleAvailable, setGoogleAvailable] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
