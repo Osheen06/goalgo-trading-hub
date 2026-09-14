@@ -260,7 +260,8 @@ prompt_secret OPENALGO_STRATEGY_WEBHOOK_URL \
   "OpenAlgo web UI -> Strategy -> your strategy -> Webhook URL. OpenAlgo exposes no API that lists it, so it must be pasted once. Until then GOALGO shows 'TradingView not configured' and everything else runs."
 
 # GOALGO_OWNER_USER_ID is intentionally NOT requested: the first account that
-# registers in GOALGO claims ownership in the database automatically.
+# registers in GOALGO is linked to this installation's broker connection
+# automatically. Registration stays open for additional users.
 
 MISSING=()
 for key in OPENALGO_BASE_URL OPENALGO_API_KEY GOALGO_WEBHOOK_TOKEN SUPABASE_URL \
@@ -401,6 +402,6 @@ fi
 summary
 echo
 echo "GOALGO is running on 127.0.0.1:${PORT} as systemd service '${SERVICE}'."
-echo "Open:    https://${DOMAIN}   → create the first account; it becomes the owner automatically."
+echo "Open:    https://${DOMAIN}   → create the first account; it is linked to this installation's broker connection."
 echo "Verify:  ./deploy/health-check.sh https://${DOMAIN}"
 echo "Logs:    journalctl -u ${SERVICE} -f"

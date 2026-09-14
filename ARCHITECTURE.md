@@ -121,3 +121,44 @@ The GOALGO Node server (Nitro `node_server` build, `.output/server/index.mjs`)
 binds to localhost only; nginx is the sole public listener. Releases live in
 `/opt/goalgo/releases/<timestamp>` with `/opt/goalgo/current` as the active
 symlink, so a rollback is a symlink swap plus a service restart.
+
+## Multi-user model and the broker boundary
+
+GOALGO is multi-user at the account level and single-account at the broker
+level. These are deliberately separate layers.
+
+**Per user (isolated, unlimited accounts)**
+- `profiles`, `app_settings`, `signals`, `audit_logs`, `connection_events`
+- Every table has RLS scoped to `auth.uid()`; there is no id-based lookup path
+  that crosses users, and the browser never holds a service-role key.
+
+**Per deployment (single, shared)**
+- One OpenAlgo instance on `localhost:5000`, one broker session, one
+  `OPENALGO_API_KEY` held in the server environment only.
+- `public.app_owner` links exactly one account to that connection — the
+  *broker operator*. Every server function that talks to OpenAlgo runs behind
+  `requireBrokerOperator` (`src/lib/broker-access.ts`), which checks the
+  caller's own RLS-scoped row. Other signed-in users get a clear notice and no
+  broker data or order actions.
+- The TradingView relay records incoming signals against the broker operator,
+  since the alert belongs to the single broker session.
+
+### What independent per-user broker accounts would require
+
+Per-user trading is **not** implemented and must not be faked. It needs, at
+minimum:
+
+1. Per-user OpenAlgo credentials stored server-side and encrypted at rest
+   (Postgres `pgsodium`/vault or an external secret store), never in the
+   browser and never in `.env`.
+2. One OpenAlgo instance **per trader** (OpenAlgo binds one broker session per
+   installation), each on its own port/unit, with a registry mapping user →
+   instance, plus per-instance health, restart and upgrade handling.
+3. A per-user webhook token and a distinct TradingView webhook URL per user,
+   with the relay resolving the user from the token instead of the operator.
+4. Per-user rate limiting, kill switches and audit separation, and a resource
+   plan: N OpenAlgo instances on one VPS is a capacity and blast-radius
+   decision, not a code change.
+
+Until 1–4 exist, one deployment serves one trading account, and additional
+users are workspace users only.

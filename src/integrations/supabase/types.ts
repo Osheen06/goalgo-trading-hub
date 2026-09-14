@@ -205,7 +205,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      registration_open: { Args: never; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

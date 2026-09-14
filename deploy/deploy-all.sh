@@ -76,5 +76,5 @@ if [ "$MODE" = all ] || [ "$MODE" = goalgo ]; then
 fi
 
 echo
-echo "Done. Open https://$DOMAIN and create the first account (it becomes the owner)."
+echo "Done. Open https://$DOMAIN and create the first account (it is linked to the broker connection)."
 echo "OpenAlgo admin UI (private): ssh -N -L 5000:127.0.0.1:5000 root@<vps> then http://localhost:5000"
