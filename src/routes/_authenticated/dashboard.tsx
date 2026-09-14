@@ -54,18 +54,17 @@ type ActivityRow = {
 };
 
 function Dashboard() {
-  const status = useQuery({
-    queryKey: ["system-status"],
-    queryFn: useServerFn(getSystemStatus).bind(null, { data: undefined }) as () => Promise<
-      Awaited<ReturnType<typeof getSystemStatus>>
-    >,
-    refetchInterval: 30000,
-  });
-
+  const fetchStatus = useServerFn(getSystemStatus);
   const fetchFunds = useServerFn(getFunds);
   const fetchOrders = useServerFn(getOrderbook);
   const fetchPositions = useServerFn(getPositionbook);
   const fetchStrategies = useServerFn(listStrategies);
+
+  const status = useQuery({
+    queryKey: ["system-status"],
+    queryFn: () => fetchStatus({ data: undefined }),
+    refetchInterval: 30000,
+  });
 
   const connected = status.data?.openalgo === "connected" && status.data?.broker === "connected";
 
