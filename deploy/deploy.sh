@@ -335,6 +335,29 @@ if [ "$DO_NGINX" -eq 1 ]; then
     fi
     ok "created /etc/nginx/sites-available/$DOMAIN"
   fi
+
+  # Optional: expose ONLY the exact broker OAuth callback paths to OpenAlgo.
+  # Nothing else of OpenAlgo is ever published.
+  if [ -n "$OPENALGO_PUBLIC_PATHS" ]; then
+    if grep -q "goalgo-openalgo-callbacks" /etc/nginx/sites-available/"$DOMAIN"; then
+      skip "OpenAlgo callback passthrough already present (kept)"
+    else
+      BLOCK="$(mktemp)"
+      { echo "    # goalgo-openalgo-callbacks — broker OAuth callbacks only"
+        for p in $OPENALGO_PUBLIC_PATHS; do
+          printf '    location = %s {\n        proxy_pass http://127.0.0.1:5000;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n' "$p"
+        done
+      } > "$BLOCK"
+      awk -v blockfile="$BLOCK" '
+        /^[[:space:]]*location \/ \{/ && !done { while ((getline l < blockfile) > 0) print l; done=1 }
+        { print }' /etc/nginx/sites-available/"$DOMAIN" > "$BLOCK.out"
+      cat "$BLOCK.out" > /etc/nginx/sites-available/"$DOMAIN"
+      rm -f "$BLOCK" "$BLOCK.out"
+      ok "broker callback passthrough added for: $OPENALGO_PUBLIC_PATHS"
+    fi
+  else
+    skip "OpenAlgo not exposed publicly (set OPENALGO_PUBLIC_PATHS only if your broker needs a public callback)"
+  fi
   # Required http{}-level directives, added in a separate file so nginx.conf is untouched.
   if ! grep -rq "zone=goalgo_hook" /etc/nginx/conf.d/ /etc/nginx/nginx.conf 2>/dev/null; then
     cat > /etc/nginx/conf.d/goalgo-common.conf <<'NGINX'
