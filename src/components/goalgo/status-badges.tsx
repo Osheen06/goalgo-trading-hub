@@ -11,7 +11,7 @@ function tone(value: string) {
   return "border-border bg-secondary text-muted-foreground";
 }
 
-export function OrderStatusBadge({ status }: { status?: string | null }) {
+export function OrderStatusBadge({ status }: { status?: string | null | undefined }) {
   const label = status ?? "unknown";
   return (
     <span

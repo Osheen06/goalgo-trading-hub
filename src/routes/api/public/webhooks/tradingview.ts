@@ -87,7 +87,7 @@ export const Route = createFileRoute("/api/public/webhooks/tradingview")({
             pricetype: body.pricetype ?? null,
             product: body.product ?? null,
             status: "received",
-            raw_payload: safeRaw,
+            raw_payload: safeRaw as never,
           })
           .select("id")
           .single();
