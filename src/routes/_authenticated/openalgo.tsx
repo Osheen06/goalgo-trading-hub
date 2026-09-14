@@ -113,7 +113,9 @@ function OpenAlgoPage() {
               status.isLoading
                 ? "checking"
                 : !s?.configured
-                  ? "not_configured"
+                  ? preview
+                    ? "unavailable"
+                    : "not_configured"
                   : s.broker === "auth_required"
                     ? "auth_required"
                     : s.openalgo === "connected"
