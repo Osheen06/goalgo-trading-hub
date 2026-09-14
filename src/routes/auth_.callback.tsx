@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth_/callback")({
@@ -61,9 +62,7 @@ function AuthCallback() {
     void (async () => {
       const code = params.get("code");
       if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
-          window.location.href,
-        );
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
         if (!active) return;
         if (exchangeError) {
           setError(exchangeError.message);
@@ -101,13 +100,13 @@ function AuthCallback() {
           <>
             <h1 className="font-display text-lg font-semibold">Sign-in failed</h1>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
-            <button
+            <Button
               type="button"
               onClick={() => navigate({ to: "/auth", replace: true })}
-              className="mt-5 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className="mt-5"
             >
               Back to sign in
-            </button>
+            </Button>
           </>
         ) : (
           <>
