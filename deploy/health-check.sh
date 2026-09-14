@@ -24,6 +24,8 @@ check "app shell (HTTP 200)" "curl -o /dev/null -sS -w '%{http_code}' --max-time
 check "deep link routing" "curl -o /dev/null -sS -w '%{http_code}' --max-time 15 '$BASE/auth' | grep -q 200 && echo 200"
 check "webhook rejects no token" "curl -o /dev/null -sS -w '%{http_code}' --max-time 15 -X POST '$BASE/api/public/webhooks/tradingview' -H 'Content-Type: application/json' -d '{}' | grep -qE '401|503' && echo 'rejected'"
 
+check "OpenAlgo site still served" "curl -o /dev/null -sS -w '%{http_code}' --max-time 15 '${OPENALGO_PUBLIC_URL:-https://goalgo.fairwoodit.com}' | grep -qE '200|301|302|401|403' && echo 'responding'"
+
 if [ -n "${GOALGO_WEBHOOK_TOKEN:-}" ]; then
   check "OpenAlgo reachable from GOALGO" \
     "curl -fsS --max-time 20 -H 'x-goalgo-token: $GOALGO_WEBHOOK_TOKEN' '$BASE/api/public/health?deep=1'"

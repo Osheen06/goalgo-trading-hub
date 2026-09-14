@@ -76,3 +76,33 @@ never held by GOALGO at all — they exist only inside OpenAlgo.
 The health endpoint returns booleans only; its deeper OpenAlgo probe requires
 the `x-goalgo-token` header so it cannot be used to fingerprint or flood the
 trading server.
+
+
+## Single-owner model
+
+This deployment serves exactly one trader. The first account that registers is
+recorded in `public.app_owner` by a `SECURITY DEFINER` trigger; every later
+registration is refused by the database, so no one can create a second account
+even if the sign-up form is reached directly. Inbound TradingView signals are
+attributed to that owner, which removes the need for a `GOALGO_OWNER_USER_ID`
+environment variable.
+
+`public.registration_open()` is intentionally callable without signing in. It
+returns a single boolean and no account data, so the sign-in page can hide the
+sign-up tab once the owner exists.
+
+## Secrets on the server
+
+`/etc/goalgo/goalgo.env` is created by `deploy.sh` with mode 600, owner
+`root:goalgo`. Secrets are read with hidden input, never echoed, never written to
+shell history by the script, and never printed in any log line or summary. The
+webhook token is generated with `openssl rand -hex 32` and reused on every later
+deployment run.
+
+## Note on the committed `.env`
+
+The Lovable workspace tracks a `.env` file that contains **only public values**
+(`SUPABASE_URL`, `SUPABASE_PROJECT_ID`, `SUPABASE_PUBLISHABLE_KEY` and their
+`VITE_` twins) — the same values shipped in the browser bundle. No server-side
+secret is ever written there: production secrets exist only in
+`/etc/goalgo/goalgo.env` on the VPS. Any other `.env*` file is git-ignored.

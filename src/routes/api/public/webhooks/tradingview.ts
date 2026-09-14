@@ -8,8 +8,12 @@
  * Required server environment:
  *   GOALGO_WEBHOOK_TOKEN            shared secret expected on every call
  *   OPENALGO_STRATEGY_WEBHOOK_URL   OpenAlgo strategy webhook (POST /strategy/webhook/<token>)
- *   GOALGO_OWNER_USER_ID            (optional) user the signals belong to
+ *
+ * Signals are attributed to the deployment owner, which is the first account
+ * that registered (public.app_owner). GOALGO_OWNER_USER_ID may override it but
+ * is not required.
  */
+
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
@@ -44,6 +48,15 @@ export const Route = createFileRoute("/api/public/webhooks/tradingview")({
             { status: 503 },
           );
         }
+        if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+          // Recording signals requires privileged database access. Fail
+          // honestly instead of crashing or silently dropping the alert.
+          return Response.json(
+            { status: "error", message: "Signal storage is not configured on this server." },
+            { status: 503 },
+          );
+        }
+
 
         const url = new URL(request.url);
         const provided =
@@ -69,7 +82,18 @@ export const Route = createFileRoute("/api/public/webhooks/tradingview")({
         const body = parsed.data;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const ownerId = process.env["GOALGO_OWNER_USER_ID"] ?? null;
+
+        // The deployment owner is the first registered account. The env var is
+        // only an optional override for unusual setups.
+        let ownerId = process.env["GOALGO_OWNER_USER_ID"] || null;
+        if (!ownerId) {
+          const { data: owner } = await supabaseAdmin
+            .from("app_owner")
+            .select("user_id")
+            .maybeSingle();
+          ownerId = (owner?.user_id as string | undefined) ?? null;
+        }
+
 
         // Never persist credentials that may ride along in an alert payload.
         const safeRaw: Record<string, unknown> = { ...(body as Record<string, unknown>) };

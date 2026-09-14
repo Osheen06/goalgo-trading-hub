@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_owner: {
+        Row: {
+          claimed_at: string
+          singleton: boolean
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          singleton?: boolean
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          singleton?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           automated_trading_enabled: boolean
@@ -187,7 +205,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      registration_open: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
