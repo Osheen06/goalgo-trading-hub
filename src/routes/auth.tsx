@@ -41,11 +41,28 @@ function AuthPage() {
   const [confirm, setConfirm] = useState("");
   const [name, setName] = useState("");
 
+  // Single-trader deployment: registration closes once the owner account exists.
+  const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
+
+  useEffect(() => {
+    let active = true;
+    supabase
+      .rpc("registration_open")
+      .then(({ data, error }) => {
+        if (!active) return;
+        setRegistrationOpen(error ? true : Boolean(data));
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
