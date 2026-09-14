@@ -10,33 +10,256 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as AuthenticatedBrokerRouteImport } from './routes/_authenticated/broker'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFundsRouteImport } from './routes/_authenticated/funds'
+import { Route as AuthenticatedHoldingsRouteImport } from './routes/_authenticated/holdings'
+import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
+import { Route as AuthenticatedOpenalgoRouteImport } from './routes/_authenticated/openalgo'
+import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
+import { Route as AuthenticatedStrategiesRouteImport } from './routes/_authenticated/strategies'
+import { Route as AuthenticatedTradingviewRouteImport } from './routes/_authenticated/tradingview'
+import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
+import { Route as AuthenticatedOrdersOrderidRouteImport } from './routes/_authenticated/orders.$orderid'
+import { Route as ApiPublicWebhooksTradingviewRouteImport } from './routes/api/public/webhooks/tradingview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBrokerRoute = AuthenticatedBrokerRouteImport.update({
+  id: '/broker',
+  path: '/broker',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFundsRoute = AuthenticatedFundsRouteImport.update({
+  id: '/funds',
+  path: '/funds',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHoldingsRoute = AuthenticatedHoldingsRouteImport.update({
+  id: '/holdings',
+  path: '/holdings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOpenalgoRoute = AuthenticatedOpenalgoRouteImport.update({
+  id: '/openalgo',
+  path: '/openalgo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPositionsRoute = AuthenticatedPositionsRouteImport.update({
+  id: '/positions',
+  path: '/positions',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStrategiesRoute = AuthenticatedStrategiesRouteImport.update({
+  id: '/strategies',
+  path: '/strategies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTradingviewRoute =
+  AuthenticatedTradingviewRouteImport.update({
+    id: '/tradingview',
+    path: '/tradingview',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOrdersIndexRoute =
+  AuthenticatedOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOrdersOrderidRoute =
+  AuthenticatedOrdersOrderidRouteImport.update({
+    id: '/orders/$orderid',
+    path: '/orders/$orderid',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicWebhooksTradingviewRoute =
+  ApiPublicWebhooksTradingviewRouteImport.update({
+    id: '/api/public/webhooks/tradingview',
+    path: '/api/public/webhooks/tradingview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
+  '/broker': typeof AuthenticatedBrokerRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/funds': typeof AuthenticatedFundsRoute
+  '/holdings': typeof AuthenticatedHoldingsRoute
+  '/market': typeof AuthenticatedMarketRoute
+  '/openalgo': typeof AuthenticatedOpenalgoRoute
+  '/positions': typeof AuthenticatedPositionsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/signals': typeof AuthenticatedSignalsRoute
+  '/strategies': typeof AuthenticatedStrategiesRoute
+  '/tradingview': typeof AuthenticatedTradingviewRoute
+  '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
+  '/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
+  '/broker': typeof AuthenticatedBrokerRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/funds': typeof AuthenticatedFundsRoute
+  '/holdings': typeof AuthenticatedHoldingsRoute
+  '/market': typeof AuthenticatedMarketRoute
+  '/openalgo': typeof AuthenticatedOpenalgoRoute
+  '/positions': typeof AuthenticatedPositionsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/signals': typeof AuthenticatedSignalsRoute
+  '/strategies': typeof AuthenticatedStrategiesRoute
+  '/tradingview': typeof AuthenticatedTradingviewRoute
+  '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
+  '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/broker': typeof AuthenticatedBrokerRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/funds': typeof AuthenticatedFundsRoute
+  '/_authenticated/holdings': typeof AuthenticatedHoldingsRoute
+  '/_authenticated/market': typeof AuthenticatedMarketRoute
+  '/_authenticated/openalgo': typeof AuthenticatedOpenalgoRoute
+  '/_authenticated/positions': typeof AuthenticatedPositionsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/signals': typeof AuthenticatedSignalsRoute
+  '/_authenticated/strategies': typeof AuthenticatedStrategiesRoute
+  '/_authenticated/tradingview': typeof AuthenticatedTradingviewRoute
+  '/_authenticated/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
+  '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/activity'
+    | '/broker'
+    | '/dashboard'
+    | '/funds'
+    | '/holdings'
+    | '/market'
+    | '/openalgo'
+    | '/positions'
+    | '/settings'
+    | '/signals'
+    | '/strategies'
+    | '/tradingview'
+    | '/orders/$orderid'
+    | '/orders/'
+    | '/api/public/webhooks/tradingview'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/activity'
+    | '/broker'
+    | '/dashboard'
+    | '/funds'
+    | '/holdings'
+    | '/market'
+    | '/openalgo'
+    | '/positions'
+    | '/settings'
+    | '/signals'
+    | '/strategies'
+    | '/tradingview'
+    | '/orders/$orderid'
+    | '/orders'
+    | '/api/public/webhooks/tradingview'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/activity'
+    | '/_authenticated/broker'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/funds'
+    | '/_authenticated/holdings'
+    | '/_authenticated/market'
+    | '/_authenticated/openalgo'
+    | '/_authenticated/positions'
+    | '/_authenticated/settings'
+    | '/_authenticated/signals'
+    | '/_authenticated/strategies'
+    | '/_authenticated/tradingview'
+    | '/_authenticated/orders/$orderid'
+    | '/_authenticated/orders/'
+    | '/api/public/webhooks/tradingview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicWebhooksTradingviewRoute: typeof ApiPublicWebhooksTradingviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +271,178 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/activity': {
+      id: '/_authenticated/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AuthenticatedActivityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/broker': {
+      id: '/_authenticated/broker'
+      path: '/broker'
+      fullPath: '/broker'
+      preLoaderRoute: typeof AuthenticatedBrokerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/funds': {
+      id: '/_authenticated/funds'
+      path: '/funds'
+      fullPath: '/funds'
+      preLoaderRoute: typeof AuthenticatedFundsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/holdings': {
+      id: '/_authenticated/holdings'
+      path: '/holdings'
+      fullPath: '/holdings'
+      preLoaderRoute: typeof AuthenticatedHoldingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/market': {
+      id: '/_authenticated/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AuthenticatedMarketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/openalgo': {
+      id: '/_authenticated/openalgo'
+      path: '/openalgo'
+      fullPath: '/openalgo'
+      preLoaderRoute: typeof AuthenticatedOpenalgoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/positions': {
+      id: '/_authenticated/positions'
+      path: '/positions'
+      fullPath: '/positions'
+      preLoaderRoute: typeof AuthenticatedPositionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/signals': {
+      id: '/_authenticated/signals'
+      path: '/signals'
+      fullPath: '/signals'
+      preLoaderRoute: typeof AuthenticatedSignalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/strategies': {
+      id: '/_authenticated/strategies'
+      path: '/strategies'
+      fullPath: '/strategies'
+      preLoaderRoute: typeof AuthenticatedStrategiesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tradingview': {
+      id: '/_authenticated/tradingview'
+      path: '/tradingview'
+      fullPath: '/tradingview'
+      preLoaderRoute: typeof AuthenticatedTradingviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/orders/': {
+      id: '/_authenticated/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof AuthenticatedOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/orders/$orderid': {
+      id: '/_authenticated/orders/$orderid'
+      path: '/orders/$orderid'
+      fullPath: '/orders/$orderid'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderidRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/webhooks/tradingview': {
+      id: '/api/public/webhooks/tradingview'
+      path: '/api/public/webhooks/tradingview'
+      fullPath: '/api/public/webhooks/tradingview'
+      preLoaderRoute: typeof ApiPublicWebhooksTradingviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedBrokerRoute: typeof AuthenticatedBrokerRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFundsRoute: typeof AuthenticatedFundsRoute
+  AuthenticatedHoldingsRoute: typeof AuthenticatedHoldingsRoute
+  AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
+  AuthenticatedOpenalgoRoute: typeof AuthenticatedOpenalgoRoute
+  AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
+  AuthenticatedStrategiesRoute: typeof AuthenticatedStrategiesRoute
+  AuthenticatedTradingviewRoute: typeof AuthenticatedTradingviewRoute
+  AuthenticatedOrdersOrderidRoute: typeof AuthenticatedOrdersOrderidRoute
+  AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedBrokerRoute: AuthenticatedBrokerRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFundsRoute: AuthenticatedFundsRoute,
+  AuthenticatedHoldingsRoute: AuthenticatedHoldingsRoute,
+  AuthenticatedMarketRoute: AuthenticatedMarketRoute,
+  AuthenticatedOpenalgoRoute: AuthenticatedOpenalgoRoute,
+  AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
+  AuthenticatedStrategiesRoute: AuthenticatedStrategiesRoute,
+  AuthenticatedTradingviewRoute: AuthenticatedTradingviewRoute,
+  AuthenticatedOrdersOrderidRoute: AuthenticatedOrdersOrderidRoute,
+  AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicWebhooksTradingviewRoute: ApiPublicWebhooksTradingviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
