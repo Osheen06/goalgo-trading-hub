@@ -126,9 +126,12 @@ function AuthPage() {
   // Google and comes back to /auth/callback, which finishes the session.
   const google = async () => {
     setBusy(true);
+    // Diagnostic only — an origin, never a token, secret or key.
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    console.info("[GOALGO auth] Google sign-in redirectTo:", redirectTo);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo },
     });
     if (error) {
       setBusy(false);
