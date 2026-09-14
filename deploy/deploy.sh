@@ -8,12 +8,19 @@
 #   sudo ./deploy/deploy.sh --skip-dns   # deploy before DNS has propagated
 #   ./deploy/deploy.sh --dry-run         # run all checks + env setup, change nothing else
 #
+# Architecture (single public domain, no extra DNS record):
+#   https://goalgo.fairwoodit.com/  -> GOALGO   (127.0.0.1:3000, this script)
+#   OpenAlgo                        -> 127.0.0.1:5000, private, not published
+#   GOALGO talks to OpenAlgo over localhost only.
+#
 # Safety guarantees:
 #   * Touches ONLY /opt/goalgo, /etc/goalgo, the goalgo systemd unit and the
-#     app.goalgo.fairwoodit.com nginx site.
-#   * Never reads, edits, reloads or restarts the existing OpenAlgo install,
-#     its nginx server block, its certificate or its database.
-#   * Refuses to continue if the chosen port or hostname is already in use.
+#     goalgo.fairwoodit.com nginx site.
+#   * Never reads, edits, reloads or restarts the OpenAlgo service, its .env,
+#     its certificate or its database. If OpenAlgo's installer left an nginx
+#     site claiming this domain, the symlink is disabled (the file is kept)
+#     so one vhost owns the hostname — nothing is deleted.
+#   * Refuses to continue if the chosen port is already in use by someone else.
 #   * Idempotent: existing secrets, releases, services and certificates are
 #     preserved; only missing pieces are created.
 #   * Every release lands in its own directory; `current` is a symlink, so
@@ -21,9 +28,12 @@
 # ---------------------------------------------------------------------------
 set -euo pipefail
 
-DOMAIN="${GOALGO_DOMAIN:-app.goalgo.fairwoodit.com}"
+DOMAIN="${GOALGO_DOMAIN:-goalgo.fairwoodit.com}"
 EXPECTED_IP="${GOALGO_EXPECTED_IP:-210.56.147.234}"
-OPENALGO_URL_DEFAULT="${GOALGO_OPENALGO_URL:-https://goalgo.fairwoodit.com}"
+OPENALGO_URL_DEFAULT="${GOALGO_OPENALGO_URL:-http://127.0.0.1:5000}"
+# Optional, space separated: public paths that must reach OpenAlgo directly
+# (broker OAuth callbacks only). Empty by default — OpenAlgo stays private.
+OPENALGO_PUBLIC_PATHS="${OPENALGO_PUBLIC_PATHS:-}"
 APP_ROOT="${GOALGO_ROOT:-/opt/goalgo}"
 ENV_FILE="${GOALGO_ENV_FILE:-/etc/goalgo/goalgo.env}"
 SERVICE="goalgo"
