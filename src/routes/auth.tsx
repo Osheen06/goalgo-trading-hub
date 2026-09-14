@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,7 +70,14 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) {
-      toast.error(error.message);
+      // Explicit but safe: never reveal whether the address exists.
+      if (/invalid login credentials/i.test(error.message)) {
+        toast.error("Incorrect email or password.");
+      } else if (/email not confirmed/i.test(error.message)) {
+        toast.error("Confirm your email address first — check your inbox for the link.");
+      } else {
+        toast.error(error.message);
+      }
       return;
     }
     navigate({ to: "/dashboard" });
@@ -131,18 +138,20 @@ function AuthPage() {
     else toast.success("Password reset link sent to your email.");
   };
 
+  // Standard Supabase browser OAuth: works on the self-hosted deployment with
+  // no dependency on any hosted OAuth broker. The browser is redirected to
+  // Google and comes back to /auth/callback, which finishes the session.
   const google = async () => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    if (result.error) {
+    if (error) {
       setBusy(false);
-      toast.error("Google sign-in failed. Please try again.");
-      return;
+      toast.error(`Google sign-in failed: ${error.message}`);
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard" });
+    // On success the browser navigates away to Google.
   };
 
   return (

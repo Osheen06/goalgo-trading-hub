@@ -25,6 +25,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
 import { Route as AuthenticatedStrategiesRouteImport } from './routes/_authenticated/strategies'
 import { Route as AuthenticatedTradingviewRouteImport } from './routes/_authenticated/tradingview'
+import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
 import { Route as AuthenticatedOrdersOrderidRouteImport } from './routes/_authenticated/orders.$orderid'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
@@ -110,6 +111,11 @@ const AuthenticatedTradingviewRoute =
     path: '/tradingview',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth_/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedOrdersIndexRoute =
   AuthenticatedOrdersIndexRouteImport.update({
     id: '/orders/',
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/signals': typeof AuthenticatedSignalsRoute
   '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/signals': typeof AuthenticatedSignalsRoute
   '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
   '/_authenticated/strategies': typeof AuthenticatedStrategiesRoute
   '/_authenticated/tradingview': typeof AuthenticatedTradingviewRoute
+  '/auth_/callback': typeof AuthCallbackRoute
   '/_authenticated/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/signals'
     | '/strategies'
     | '/tradingview'
+    | '/auth/callback'
     | '/orders/$orderid'
     | '/api/public/health'
     | '/orders/'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/signals'
     | '/strategies'
     | '/tradingview'
+    | '/auth/callback'
     | '/orders/$orderid'
     | '/api/public/health'
     | '/orders'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/_authenticated/signals'
     | '/_authenticated/strategies'
     | '/_authenticated/tradingview'
+    | '/auth_/callback'
     | '/_authenticated/orders/$orderid'
     | '/api/public/health'
     | '/_authenticated/orders/'
@@ -271,6 +283,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicWebhooksTradingviewRoute: typeof ApiPublicWebhooksTradingviewRoute
 }
@@ -389,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTradingviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/auth_/callback': {
+      id: '/auth_/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/orders/': {
       id: '/_authenticated/orders/'
       path: '/orders'
@@ -462,6 +482,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicWebhooksTradingviewRoute: ApiPublicWebhooksTradingviewRoute,
 }
