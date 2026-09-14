@@ -164,8 +164,22 @@ function AuthPage() {
           <Tabs value={mode} onValueChange={setMode}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Create account</TabsTrigger>
+              <TabsTrigger value="signup" disabled={registrationOpen === false}>
+                {registrationOpen === false ? "Registration closed" : "Create account"}
+              </TabsTrigger>
             </TabsList>
+            {registrationOpen === false ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                This deployment already has its owner account. Only that account can sign in.
+              </p>
+            ) : null}
+            {registrationOpen === true ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                No account exists yet — the first account you create becomes the owner of this
+                deployment, and registration closes automatically afterwards.
+              </p>
+            ) : null}
+
 
             <TabsContent value="signin" className="mt-5">
               <form className="space-y-4" onSubmit={signIn}>
