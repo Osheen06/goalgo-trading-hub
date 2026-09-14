@@ -5,6 +5,12 @@
 #   sudo ./deploy/install-openalgo.sh                 # install if absent, else do nothing
 #   sudo ./deploy/install-openalgo.sh --check         # report state only, change nothing
 #
+# Single-domain architecture: after this installer finishes, OpenAlgo keeps its
+# own systemd service and its own configuration on 127.0.0.1:5000, but it does
+# NOT keep the public hostname. deploy.sh then makes goalgo.fairwoodit.com serve
+# GOALGO and reuses the Let's Encrypt certificate this installer obtained. The
+# OpenAlgo vhost file is preserved (only its sites-enabled symlink is removed).
+#
 # This script does NOT reimplement OpenAlgo's installer. It downloads and runs
 # the OFFICIAL installer from the OpenAlgo repository:
 #   https://raw.githubusercontent.com/marketcalls/openalgo/main/install/install.sh
@@ -54,6 +60,7 @@ if [ -z "$RESOLVED" ]; then
   die "$OA_DOMAIN does not resolve. MANUAL ACTION: create an A record for it pointing at this server, wait for propagation, then re-run. (Let's Encrypt cannot issue a certificate until then.)"
 fi
 say "$OA_DOMAIN -> $RESOLVED"
+say "NOTE: this is the ONLY domain. It ends up serving GOALGO; OpenAlgo stays on 127.0.0.1:5000."
 
 step "Checking ports OpenAlgo needs (80, 443, 5000, 8765, 5555)"
 for p in 80 443 5000 8765 5555; do
@@ -84,6 +91,8 @@ cat <<TXT
 
   The installer now asks you, in its own prompts:
     * Domain name            -> type: $OA_DOMAIN
+                                (this issues the TLS certificate GOALGO will
+                                 reuse; GOALGO takes over the vhost afterwards)
     * Broker                 -> pick your broker from its list
     * Broker API key/secret  -> paste them; they are stored only in
                                 $OA_DIR/.env on this server
@@ -98,8 +107,13 @@ TXT
 step "Verifying OpenAlgo"
 systemctl is-enabled --quiet "$OA_SERVICE" && say "service enabled at boot"
 systemctl is-active  --quiet "$OA_SERVICE" && say "service running" || say "[warn] service not active — check: journalctl -u $OA_SERVICE -n 100"
-CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "https://$OA_DOMAIN" || true)"
-say "https://$OA_DOMAIN -> HTTP $CODE"
+CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://127.0.0.1:5000" || true)"
+say "http://127.0.0.1:5000 -> HTTP $CODE (private; this is what GOALGO talks to)"
+[ -d "/etc/letsencrypt/live/$OA_DOMAIN" ] && say "TLS certificate for $OA_DOMAIN present — GOALGO will reuse it"
 echo
-echo "Next: open https://$OA_DOMAIN, complete the OpenAlgo broker login, then"
-echo "generate an API key in the OpenAlgo UI (API Key page). GOALGO asks for it."
+echo "Next: reach the OpenAlgo admin UI privately through an SSH tunnel from your"
+echo "own machine (OpenAlgo is intentionally not published):"
+echo "    ssh -N -L 5000:127.0.0.1:5000 root@210.56.147.234"
+echo "    then open http://localhost:5000"
+echo "Complete the broker login there, then generate an API key (API Key page)."
+echo "GOALGO asks for that key during its own deployment."
