@@ -169,7 +169,7 @@ export function ErrorState({
 }: {
   title?: string | undefined;
   message?: string | null | undefined;
-  onRetry?: ( | undefined) => void;
+  onRetry?: (() => void) | undefined;
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
@@ -217,8 +217,8 @@ export function DataGate<T>({
   loadingLabel,
 }: {
   isLoading: boolean;
-  envelope?: { ok: boolean | undefined; configured: boolean; data: T | null; error: string | null } | undefined;
-  onRetry?: ( | undefined) => void;
+  envelope?: { ok: boolean; configured: boolean; data: T | null; error: string | null } | undefined;
+  onRetry?: (() => void) | undefined;
   loadingLabel?: string | undefined;
   children: (data: T) => ReactNode;
 }) {

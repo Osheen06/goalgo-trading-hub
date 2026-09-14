@@ -22,7 +22,7 @@ export type OpenAlgoResult<T = unknown> = {
 export const OPENALGO_NOT_CONFIGURED =
   "OpenAlgo is not configured. Set OPENALGO_BASE_URL and OPENALGO_API_KEY on the server.";
 
-function readConfig(): { baseUrl?: string | undefined; apiKey?: string } { | undefined
+function readConfig(): { baseUrl?: string | undefined; apiKey?: string | undefined } {
   const baseUrl = process.env["OPENALGO_BASE_URL"]?.trim().replace(/\/+$/, "");
   const apiKey = process.env["OPENALGO_API_KEY"]?.trim();
   return { baseUrl: baseUrl || undefined, apiKey: apiKey || undefined };
