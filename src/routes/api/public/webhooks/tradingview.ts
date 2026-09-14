@@ -93,6 +93,36 @@ export const Route = createFileRoute("/api/public/webhooks/tradingview")({
           .single();
 
         const signalId = inserted?.id as string | undefined;
+
+        // Server-side automated-trading switch. A disabled switch stops the
+        // signal here; it is never forwarded to OpenAlgo or the broker.
+        if (ownerId) {
+          const { data: settings } = await supabaseAdmin
+            .from("app_settings")
+            .select("automated_trading_enabled, webhook_relay_enabled")
+            .eq("user_id", ownerId)
+            .maybeSingle();
+          const tradingOff = settings?.automated_trading_enabled === false;
+          const relayOff = settings?.webhook_relay_enabled === false;
+          if (tradingOff || relayOff) {
+            if (signalId) {
+              await supabaseAdmin
+                .from("signals")
+                .update({
+                  status: "rejected",
+                  message: tradingOff
+                    ? "Automated trading is disabled in GOALGO — signal was not forwarded."
+                    : "Webhook relay is disabled in GOALGO — signal was not forwarded.",
+                })
+                .eq("id", signalId);
+            }
+            return Response.json(
+              { status: "error", message: "Automated trading is disabled." },
+              { status: 423 },
+            );
+          }
+        }
+
         const forwardUrl = process.env["OPENALGO_STRATEGY_WEBHOOK_URL"];
 
         if (!forwardUrl) {
