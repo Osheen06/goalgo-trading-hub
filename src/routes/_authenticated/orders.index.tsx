@@ -2,8 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { cancelAllOrders, getOrderbook } from "@/lib/openalgo.functions";
+import { cancelAllOrders, getOrderbook, getSystemStatus } from "@/lib/openalgo.functions";
 import { DataGate, EmptyState, PageHeader, Panel } from "@/components/goalgo/primitives";
+import { OrderTicket } from "@/components/goalgo/order-ticket";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -58,11 +60,25 @@ function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortDesc, setSortDesc] = useState(true);
 
+  const fetchStatus = useServerFn(getSystemStatus);
+
   const q = useQuery({
     queryKey: ["orderbook"],
     queryFn: () => fetchOrders({ data: undefined }),
     refetchInterval: 20000,
   });
+
+  const status = useQuery({
+    queryKey: ["system-status"],
+    queryFn: () => fetchStatus({ data: undefined }),
+    refetchInterval: 30000,
+  });
+  const tradingReady = status.data?.broker === "connected";
+  const notReadyReason = status.isLoading
+    ? "Checking your broker connection…"
+    : (status.data?.message ?? "Your broker is not connected through OpenAlgo.");
+
+
 
   const rows = useMemo(() => {
     const list = q.data?.data?.orders ?? [];
@@ -102,6 +118,14 @@ function OrdersPage() {
             <Button size="sm" variant="secondary" onClick={() => void q.refetch()}>
               Refresh
             </Button>
+            <OrderTicket
+              mode="place"
+              triggerLabel="Place order"
+              disabled={!tradingReady}
+              disabledReason={tradingReady ? undefined : notReadyReason}
+              onDone={() => void queryClient.invalidateQueries({ queryKey: ["orderbook"] })}
+            />
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button size="sm" variant="destructive">

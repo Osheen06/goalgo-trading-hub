@@ -205,7 +205,77 @@ export const cancelOrder = createServerFn({ method: "POST" })
     return envelope(res);
   });
 
+/**
+ * Place a real broker order through OpenAlgo POST /api/v1/placeorder.
+ * Fields follow the documented schema exactly; OpenAlgo rejects undeclared keys.
+ */
+const orderInput = z.object({
+  symbol: z.string().min(1).max(60),
+  exchange: z.enum(["NSE", "NFO", "BSE", "BFO", "CDS", "MCX", "NCDEX", "BCD"]),
+  action: z.enum(["BUY", "SELL"]),
+  quantity: z.number().int().positive().max(1000000),
+  pricetype: z.enum(["MARKET", "LIMIT", "SL", "SL-M"]),
+  product: z.enum(["CNC", "NRML", "MIS"]),
+  price: z.number().min(0).optional(),
+  trigger_price: z.number().min(0).optional(),
+  disclosed_quantity: z.number().int().min(0).optional(),
+  strategy: z.string().max(64).optional(),
+});
+
+function orderBody(d: z.infer<typeof orderInput>): Record<string, Json> {
+  return {
+    strategy: d.strategy ?? "GOALGO",
+    symbol: d.symbol,
+    exchange: d.exchange,
+    action: d.action,
+    quantity: String(d.quantity),
+    pricetype: d.pricetype,
+    product: d.product,
+    price: String(d.price ?? 0),
+    trigger_price: String(d.trigger_price ?? 0),
+    disclosed_quantity: String(d.disclosed_quantity ?? 0),
+  };
+}
+
+export const placeOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => orderInput.parse(d))
+  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
+    const { oaPost } = await import("./openalgo/client.server");
+    const res = await oaPost<Record<string, Json>>("/placeorder", orderBody(data));
+    await writeAudit(
+      context as unknown as AuthedContext,
+      "order.place",
+      `${data.action} ${data.quantity} ${data.symbol} (${data.exchange}, ${data.pricetype}/${data.product}) — ${
+        res.ok ? "accepted by OpenAlgo" : (res.error ?? "failed")
+      }`,
+      res.ok ? "warning" : "error",
+    );
+    return envelope(res);
+  });
+
+export const modifyOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    orderInput.extend({ orderid: z.string().min(1).max(64) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
+    const { oaPost } = await import("./openalgo/client.server");
+    const res = await oaPost<Record<string, Json>>("/modifyorder", {
+      orderid: data.orderid,
+      ...orderBody(data),
+    });
+    await writeAudit(
+      context as unknown as AuthedContext,
+      "order.modify",
+      `Modify requested for order ${data.orderid} — ${res.ok ? "accepted" : (res.error ?? "failed")}`,
+      res.ok ? "warning" : "error",
+    );
+    return envelope(res);
+  });
+
 export const closeAllPositions = createServerFn({ method: "POST" })
+
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ strategy: z.string().max(64).optional() }).parse(d))
   .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {

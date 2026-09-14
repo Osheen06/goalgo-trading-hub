@@ -27,6 +27,7 @@ import { Route as AuthenticatedStrategiesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedTradingviewRouteImport } from './routes/_authenticated/tradingview'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
 import { Route as AuthenticatedOrdersOrderidRouteImport } from './routes/_authenticated/orders.$orderid'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicWebhooksTradingviewRouteImport } from './routes/api/public/webhooks/tradingview'
 
 const IndexRoute = IndexRouteImport.update({
@@ -121,6 +122,11 @@ const AuthenticatedOrdersOrderidRoute =
     path: '/orders/$orderid',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksTradingviewRoute =
   ApiPublicWebhooksTradingviewRouteImport.update({
     id: '/api/public/webhooks/tradingview',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/_authenticated/strategies': typeof AuthenticatedStrategiesRoute
   '/_authenticated/tradingview': typeof AuthenticatedTradingviewRoute
   '/_authenticated/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/strategies'
     | '/tradingview'
     | '/orders/$orderid'
+    | '/api/public/health'
     | '/orders/'
     | '/api/public/webhooks/tradingview'
   fileRoutesByTo: FileRoutesByTo
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/strategies'
     | '/tradingview'
     | '/orders/$orderid'
+    | '/api/public/health'
     | '/orders'
     | '/api/public/webhooks/tradingview'
   id:
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/_authenticated/strategies'
     | '/_authenticated/tradingview'
     | '/_authenticated/orders/$orderid'
+    | '/api/public/health'
     | '/_authenticated/orders/'
     | '/api/public/webhooks/tradingview'
   fileRoutesById: FileRoutesById
@@ -259,6 +271,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicWebhooksTradingviewRoute: typeof ApiPublicWebhooksTradingviewRoute
 }
 
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersOrderidRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/tradingview': {
       id: '/api/public/webhooks/tradingview'
       path: '/api/public/webhooks/tradingview'
@@ -442,6 +462,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicWebhooksTradingviewRoute: ApiPublicWebhooksTradingviewRoute,
 }
 export const routeTree = rootRouteImport
