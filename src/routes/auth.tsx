@@ -131,18 +131,20 @@ function AuthPage() {
     else toast.success("Password reset link sent to your email.");
   };
 
+  // Standard Supabase browser OAuth: works on the self-hosted deployment with
+  // no dependency on any hosted OAuth broker. The browser is redirected to
+  // Google and comes back to /auth/callback, which finishes the session.
   const google = async () => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    if (result.error) {
+    if (error) {
       setBusy(false);
-      toast.error("Google sign-in failed. Please try again.");
-      return;
+      toast.error(`Google sign-in failed: ${error.message}`);
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard" });
+    // On success the browser navigates away to Google.
   };
 
   return (
