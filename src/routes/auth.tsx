@@ -41,8 +41,6 @@ function AuthPage() {
   const [confirm, setConfirm] = useState("");
   const [name, setName] = useState("");
 
-  // Single-trader deployment: registration closes once the owner account exists.
-  const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
   const [googleAvailable, setGoogleAvailable] = useState(true);
 
   useEffect(() => {
@@ -50,19 +48,6 @@ function AuthPage() {
       if (data.session) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
-
-  useEffect(() => {
-    let active = true;
-    supabase
-      .rpc("registration_open")
-      .then(({ data, error }) => {
-        if (!active) return;
-        setRegistrationOpen(error ? true : Boolean(data));
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
 
 
   const signIn = async (e: React.FormEvent) => {
@@ -105,12 +90,9 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) {
-      // The database refuses extra accounts on a single-trader deployment.
-      const closed = /database error|registration is closed/i.test(error.message);
-      if (closed) {
-        setRegistrationOpen(false);
+      if (/already registered|already exists/i.test(error.message)) {
+        toast.error("An account with this email already exists. Sign in instead.");
         setMode("signin");
-        toast.error("This GOALGO deployment already has an owner account. Sign in instead.");
       } else {
         toast.error(error.message);
       }
@@ -180,21 +162,8 @@ function AuthPage() {
           <Tabs value={mode} onValueChange={setMode}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup" disabled={registrationOpen === false}>
-                {registrationOpen === false ? "Registration closed" : "Create account"}
-              </TabsTrigger>
+              <TabsTrigger value="signup">Create account</TabsTrigger>
             </TabsList>
-            {registrationOpen === false ? (
-              <p className="mt-3 text-xs text-muted-foreground">
-                This deployment already has its owner account. Only that account can sign in.
-              </p>
-            ) : null}
-            {registrationOpen === true ? (
-              <p className="mt-3 text-xs text-muted-foreground">
-                No account exists yet — the first account you create becomes the owner of this
-                deployment, and registration closes automatically afterwards.
-              </p>
-            ) : null}
 
 
             <TabsContent value="signin" className="mt-5">
