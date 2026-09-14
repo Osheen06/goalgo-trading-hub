@@ -4,6 +4,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireBrokerOperator, isBrokerOperator } from "./broker-access";
 import { z } from "zod";
 import type {
   ApiEnvelope,
@@ -59,7 +60,7 @@ async function writeAudit(
 /* ---------------------------------- status --------------------------------- */
 
 export const getSystemStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .handler(async ({ context }): Promise<SystemStatus> => {
     const { oaPost, getOpenAlgoBaseUrl, isOpenAlgoConfigured } = await import(
       "./openalgo/client.server"
@@ -134,35 +135,35 @@ export const getSystemStatus = createServerFn({ method: "POST" })
 /* --------------------------------- account --------------------------------- */
 
 export const getFunds = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .handler(async (): Promise<ApiEnvelope<Funds>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(await oaPost<Funds>("/funds"));
   });
 
 export const getOrderbook = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .handler(async (): Promise<ApiEnvelope<OrderbookPayload>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(await oaPost<OrderbookPayload>("/orderbook"));
   });
 
 export const getPositionbook = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .handler(async (): Promise<ApiEnvelope<PositionRow[]>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(await oaPost<PositionRow[]>("/positionbook"));
   });
 
 export const getHoldings = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .handler(async (): Promise<ApiEnvelope<HoldingsPayload>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(await oaPost<HoldingsPayload>("/holdings"));
   });
 
 export const getTradebook = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .handler(async (): Promise<ApiEnvelope<TradeRow[]>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(await oaPost<TradeRow[]>("/tradebook"));
@@ -171,7 +172,7 @@ export const getTradebook = createServerFn({ method: "POST" })
 /* ---------------------------------- orders --------------------------------- */
 
 export const getOrderStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) =>
     z.object({ orderid: z.string().min(1).max(64), strategy: z.string().max(64).optional() }).parse(d),
   )
@@ -186,7 +187,7 @@ export const getOrderStatus = createServerFn({ method: "POST" })
   });
 
 export const cancelOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) =>
     z.object({ orderid: z.string().min(1).max(64), strategy: z.string().max(64).optional() }).parse(d),
   )
@@ -238,7 +239,7 @@ function orderBody(d: z.infer<typeof orderInput>): Record<string, Json> {
 }
 
 export const placeOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) => orderInput.parse(d))
   .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
@@ -255,7 +256,7 @@ export const placeOrder = createServerFn({ method: "POST" })
   });
 
 export const modifyOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) =>
     orderInput.extend({ orderid: z.string().min(1).max(64) }).parse(d),
   )
@@ -276,7 +277,7 @@ export const modifyOrder = createServerFn({ method: "POST" })
 
 export const closeAllPositions = createServerFn({ method: "POST" })
 
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) => z.object({ strategy: z.string().max(64).optional() }).parse(d))
   .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
@@ -293,7 +294,7 @@ export const closeAllPositions = createServerFn({ method: "POST" })
   });
 
 export const cancelAllOrders = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) => z.object({ strategy: z.string().max(64).optional() }).parse(d))
   .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
@@ -312,14 +313,14 @@ export const cancelAllOrders = createServerFn({ method: "POST" })
 /* -------------------------------- strategies ------------------------------- */
 
 export const listStrategies = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .handler(async (): Promise<ApiEnvelope<StrategyRow[]>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(await oaPost<StrategyRow[]>("/strategy/list"));
   });
 
 export const strategyAction = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) =>
     z
       .object({
@@ -345,7 +346,7 @@ export const strategyAction = createServerFn({ method: "POST" })
 /* ------------------------------ analyzer mode ------------------------------ */
 
 export const toggleAnalyzerMode = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) => z.object({ mode: z.boolean() }).parse(d))
   .handler(async ({ data, context }): Promise<ApiEnvelope<{ mode?: string }>> => {
     const { oaPost } = await import("./openalgo/client.server");
@@ -362,7 +363,7 @@ export const toggleAnalyzerMode = createServerFn({ method: "POST" })
 /* ------------------------------- market data ------------------------------- */
 
 export const searchSymbols = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) =>
     z
       .object({ query: z.string().min(1).max(40), exchange: z.string().max(16).optional() })
@@ -376,7 +377,7 @@ export const searchSymbols = createServerFn({ method: "POST" })
   });
 
 export const getQuote = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireBrokerOperator])
   .inputValidator((d: unknown) =>
     z.object({ symbol: z.string().min(1).max(40), exchange: z.string().min(1).max(16) }).parse(d),
   )
@@ -434,4 +435,17 @@ export const recordAuditEvent = createServerFn({ method: "POST" })
       data.severity,
     );
     return { ok: true };
+  });
+
+/* ----------------------------- broker access ------------------------------ */
+
+/**
+ * Tells the UI whether the signed-in account is the one linked to this
+ * deployment's OpenAlgo/broker connection.
+ */
+export const getBrokerAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ isOperator: boolean }> => {
+    const ctx = context as unknown as AuthedContext;
+    return { isOperator: await isBrokerOperator(ctx.supabase) };
   });
