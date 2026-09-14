@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFundsRouteImport } from './routes/_authenticated/funds'
+import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
 import { Route as ApiPublicWebhooksTradingviewRouteImport } from './routes/api/public/webhooks/tradingview'
 
 const IndexRoute = IndexRouteImport.update({
@@ -46,6 +47,12 @@ const AuthenticatedFundsRoute = AuthenticatedFundsRouteImport.update({
   path: '/funds',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOrdersIndexRoute =
+  AuthenticatedOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicWebhooksTradingviewRoute =
   ApiPublicWebhooksTradingviewRouteImport.update({
     id: '/api/public/webhooks/tradingview',
@@ -59,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
+  '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
 export interface FileRoutesByTo {
@@ -67,6 +75,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
 export interface FileRoutesById {
@@ -77,6 +86,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/funds': typeof AuthenticatedFundsRoute
+  '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
 }
 export interface FileRouteTypes {
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard'
     | '/funds'
+    | '/orders/'
     | '/api/public/webhooks/tradingview'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard'
     | '/funds'
+    | '/orders'
     | '/api/public/webhooks/tradingview'
   id:
     | '__root__'
@@ -104,6 +116,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/dashboard'
     | '/_authenticated/funds'
+    | '/_authenticated/orders/'
     | '/api/public/webhooks/tradingview'
   fileRoutesById: FileRoutesById
 }
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFundsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/orders/': {
+      id: '/_authenticated/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof AuthenticatedOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/webhooks/tradingview': {
       id: '/api/public/webhooks/tradingview'
       path: '/api/public/webhooks/tradingview'
@@ -172,11 +192,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFundsRoute: typeof AuthenticatedFundsRoute
+  AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFundsRoute: AuthenticatedFundsRoute,
+  AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
