@@ -70,7 +70,14 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) {
-      toast.error(error.message);
+      // Explicit but safe: never reveal whether the address exists.
+      if (/invalid login credentials/i.test(error.message)) {
+        toast.error("Incorrect email or password.");
+      } else if (/email not confirmed/i.test(error.message)) {
+        toast.error("Confirm your email address first — check your inbox for the link.");
+      } else {
+        toast.error(error.message);
+      }
       return;
     }
     navigate({ to: "/dashboard" });
