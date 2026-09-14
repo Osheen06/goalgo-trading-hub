@@ -193,8 +193,27 @@ database is never touched.
 | Signals arrive but nothing is forwarded | Automated trading is off, or `OPENALGO_STRATEGY_WEBHOOK_URL` is unset |
 | TradingView reports 401 | Alert URL is missing or has the wrong `token` |
 | Signals recorded with no owner | `GOALGO_OWNER_USER_ID` is unset |
+| 502 Bad Gateway | GOALGO service down or on a different port than nginx proxies to |
+| Certbot fails | DNS for `app.goalgo.fairwoodit.com` does not resolve to the VPS yet |
+
+Commands:
+
+```sh
+systemctl status goalgo                      # is it running?
+journalctl -u goalgo -n 200 --no-pager       # recent application logs
+journalctl -u goalgo -f                      # follow live
+curl -s http://127.0.0.1:3000/api/public/health
+sudo ss -tlnp | grep -E ':(80|443|3000) '    # who owns which port
+sudo nginx -t                                # config valid?
+sudo tail -n 100 /var/log/nginx/error.log
+sudo certbot certificates                    # both certs still listed?
+curl -sI https://goalgo.fairwoodit.com | head -1   # OpenAlgo still fine
+./deploy/health-check.sh https://app.goalgo.fairwoodit.com
+sudo ./deploy/rollback.sh                    # last resort: previous release
+```
 
 ---
+
 
 ## 7. Launch checklist
 
