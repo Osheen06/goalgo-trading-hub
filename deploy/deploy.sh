@@ -319,16 +319,15 @@ ok "local health: $HEALTH"
 
 # --- 10. nginx --------------------------------------------------------------
 if [ "$DO_NGINX" -eq 1 ]; then
-  step "Configuring nginx for $DOMAIN (OpenAlgo's site is left untouched)"
-  CONFLICT="$(grep -rl "server_name[^;]*\b${DOMAIN}\b" /etc/nginx/sites-enabled/ 2>/dev/null \
-              | grep -v "${DOMAIN}$" || true)"
-  [ -z "$CONFLICT" ] || die "another nginx site already claims $DOMAIN: $CONFLICT — resolve manually"
+  step "Configuring the single public vhost for $DOMAIN (OpenAlgo stays private)"
   cp "$SRC_DIR/deploy/nginx-goalgo.conf" /etc/nginx/sites-available/"$DOMAIN".src
   if [ -f /etc/nginx/sites-available/"$DOMAIN" ]; then
     skip "existing /etc/nginx/sites-available/$DOMAIN kept (certbot may manage it); reference copy saved as ${DOMAIN}.src"
   else
     if [ -d "/etc/letsencrypt/live/$DOMAIN" ]; then
-      sed -e "s#proxy_pass http://127.0.0.1:3000;#proxy_pass http://127.0.0.1:${PORT};#g" \
+      sed -e "s#server_name goalgo.fairwoodit.com;#server_name ${DOMAIN};#g" \
+          -e "s#/etc/letsencrypt/live/goalgo.fairwoodit.com/#/etc/letsencrypt/live/${DOMAIN}/#g" \
+          -e "s#proxy_pass http://127.0.0.1:3000;#proxy_pass http://127.0.0.1:${PORT};#g" \
           "$SRC_DIR/deploy/nginx-goalgo.conf" > /etc/nginx/sites-available/"$DOMAIN"
     else
       # Before certificates exist, serve plain HTTP only; certbot adds TLS later.
