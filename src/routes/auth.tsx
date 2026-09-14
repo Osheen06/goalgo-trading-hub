@@ -43,6 +43,7 @@ function AuthPage() {
 
   // Single-trader deployment: registration closes once the owner account exists.
   const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
+  const [googleAvailable, setGoogleAvailable] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -149,7 +150,13 @@ function AuthPage() {
     });
     if (error) {
       setBusy(false);
-      toast.error(`Google sign-in failed: ${error.message}`);
+      // The provider is switched on but has no credentials of its own yet.
+      if (/unsupported provider|missing oauth secret|provider is not enabled/i.test(error.message)) {
+        setGoogleAvailable(false);
+        toast.error("Google sign-in is not set up on this deployment yet. Use your email and password.");
+      } else {
+        toast.error(`Google sign-in failed: ${error.message}`);
+      }
     }
     // On success the browser navigates away to Google.
   };
@@ -280,15 +287,19 @@ function AuthPage() {
             </TabsContent>
           </Tabs>
 
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or
-            <span className="h-px flex-1 bg-border" />
-          </div>
+          {googleAvailable ? (
+            <>
+              <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                or
+                <span className="h-px flex-1 bg-border" />
+              </div>
 
-          <Button variant="secondary" className="w-full" onClick={google} disabled={busy}>
-            Continue with Google
-          </Button>
+              <Button variant="secondary" className="w-full" onClick={google} disabled={busy}>
+                Continue with Google
+              </Button>
+            </>
+          ) : null}
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
