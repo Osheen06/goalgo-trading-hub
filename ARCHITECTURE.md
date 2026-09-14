@@ -77,24 +77,21 @@ OpenAlgo remains the source of truth.
 - Success is reported only when OpenAlgo returns `status: "success"`.
 - Connection checks use read-only endpoints and never place orders.
 
-## Production topology (single VPS, 210.56.147.234)
+## Production topology (single VPS 210.56.147.234, single public domain)
 
-The VPS hosts **two independent applications**. As of the last server
-inspection OpenAlgo is not yet installed there; it is installed with its own
-official installer during Phase 2 of `DEPLOYMENT.md`.
+The VPS hosts **two independent applications behind one hostname**. Only GOALGO
+is published. OpenAlgo listens on the loopback interface and is reached by
+GOALGO over localhost. No second DNS record exists or is required.
 
 ```text
                       ┌──────────────── Ubuntu 24 VPS ────────────────┐
-browser ── HTTPS ──►  │ nginx :443                                    │
-                      │  ├─ goalgo.fairwoodit.com      → 127.0.0.1:5000
-                      │  │                                systemd: openalgo
-                      │  │                                /var/python/openalgo
-                      │  └─ app.goalgo.fairwoodit.com  → 127.0.0.1:3000
-                      │                                   systemd: goalgo
-                      │                                   /opt/goalgo
+browser ── HTTPS ──►  │ nginx :443  goalgo.fairwoodit.com             │
+                      │      └────────────► 127.0.0.1:3000  GOALGO    │
 TradingView ─ POST ──►│  /api/public/webhooks/tradingview (token, rate limited)
-                      │            │                                  │
-                      │            └─► OpenAlgo strategy webhook ─► broker
+                      │                       │                       │
+                      │                       ▼ localhost only        │
+                      │            127.0.0.1:5000  OpenAlgo ──► broker│
+                      │            (systemd: openalgo, not published) │
                       └───────────────────────────────────────────────┘
                                    GOALGO ──► Supabase (managed Postgres + Auth)
 ```
@@ -106,13 +103,19 @@ TradingView ─ POST ──►│  /api/public/webhooks/tradingview (token, rate
 | Service | `openalgo` | `goalgo` |
 | Config | `/var/python/openalgo/.env` | `/etc/goalgo/goalgo.env` |
 | Data | its own SQLite/Postgres store | Supabase (app metadata only) |
-| nginx vhost | `sites-available/openalgo.conf` | `sites-available/app.goalgo.fairwoodit.com` |
-| Certificate | its own Let's Encrypt cert | its own Let's Encrypt cert |
+| Network | 127.0.0.1:5000, private | 127.0.0.1:3000 behind nginx :443 |
+| Public address | none (SSH tunnel for the admin UI) | `https://goalgo.fairwoodit.com` |
 | Holds broker credentials | yes | never |
 
-Neither deployment writes to the other's files, service, database, vhost or
-certificate. `deploy/install-openalgo.sh` refuses to run at all when an OpenAlgo
-install is already present.
+Only one nginx vhost owns `goalgo.fairwoodit.com`. If OpenAlgo's installer
+created one for the same hostname, GOALGO removes just that `sites-enabled`
+symlink; the file in `sites-available` and the Let's Encrypt certificate remain,
+and the certificate is reused. Neither deployment writes to the other's files,
+service or database. `deploy/install-openalgo.sh` refuses to run at all when an
+OpenAlgo install is already present.
+
+If a broker's OAuth login needs a public callback, `OPENALGO_PUBLIC_PATHS`
+proxies only those exact paths to OpenAlgo; nothing else of OpenAlgo is exposed.
 
 The GOALGO Node server (Nitro `node_server` build, `.output/server/index.mjs`)
 binds to localhost only; nginx is the sole public listener. Releases live in
