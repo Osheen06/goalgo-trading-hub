@@ -35,16 +35,108 @@ positions, funds) is duplicated here.
 
 ---
 
-## 3. VPS, domain and SSL
+## 3. VPS, domain and SSL (Ubuntu 24, 210.56.147.234)
 
-1. Keep the existing OpenAlgo service untouched; confirm it still answers on its own port.
-2. Deploy GOALGO as its own service on a different port (for example 3000).
-3. Point `goalgo.fairwoodit.com` at the VPS with an A record.
-4. Terminate TLS with nginx + Let's Encrypt (`certbot --nginx -d goalgo.fairwoodit.com`),
-   proxying HTTPS to the GOALGO port. No ngrok anywhere.
-5. Run GOALGO under systemd with `Restart=always` so it survives reboots; the same applies
-   to OpenAlgo.
-6. Allow only 80/443 publicly; keep the OpenAlgo port bound to localhost.
+OpenAlgo keeps `https://goalgo.fairwoodit.com`. GOALGO gets its own host,
+`https://app.goalgo.fairwoodit.com`, and its own port. Nothing in this section
+touches the OpenAlgo service, its nginx server block, or its database.
+
+**3.1 Check for port conflicts before choosing one**
+
+```sh
+sudo ss -tlnp | sort -k4       # list every listening port
+sudo ss -tlnp | grep -q ':3000 ' && echo "3000 IS TAKEN — pick another" || echo "3000 free"
+```
+If 3000 is taken, pick a free port and change `PORT=` in the systemd unit and
+the `proxy_pass` port in the nginx file.
+
+**3.2 System user and directories**
+
+```sh
+sudo adduser --system --group --home /opt/goalgo goalgo
+sudo mkdir -p /opt/goalgo/releases /etc/goalgo
+sudo chown -R goalgo:goalgo /opt/goalgo
+```
+
+**3.3 Build and release**
+
+Build on the VPS (or in CI, then copy the `.output` directory across). The VPS
+build must target Node, not the edge runtime:
+
+```sh
+cd /opt/goalgo/releases
+sudo -u goalgo git clone <your-repo-url> $(date +%Y%m%d%H%M%S)
+cd <that-directory>
+sudo -u goalgo npm ci
+sudo -u goalgo env NITRO_PRESET=node_server npm run build
+sudo ln -sfn "$PWD" /opt/goalgo/current
+```
+
+Node 20 or newer is required (`node -v`).
+
+**3.4 Secrets file**
+
+```sh
+sudo install -m 600 -o root -g goalgo /dev/null /etc/goalgo/goalgo.env
+sudo nano /etc/goalgo/goalgo.env     # one KEY=value per line, names from .env.example
+```
+This file is the only place production secrets exist. It is never in git.
+
+**3.5 Service**
+
+```sh
+sudo cp deploy/goalgo.service /etc/systemd/system/goalgo.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now goalgo
+curl -s http://127.0.0.1:3000/api/public/health
+```
+
+**3.6 DNS and TLS**
+
+```sh
+# DNS: A record  app.goalgo.fairwoodit.com -> 210.56.147.234
+sudo cp deploy/nginx-goalgo.conf /etc/nginx/sites-available/app.goalgo.fairwoodit.com
+sudo ln -s /etc/nginx/sites-available/app.goalgo.fairwoodit.com /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d app.goalgo.fairwoodit.com
+```
+Add to the `http {}` block of `/etc/nginx/nginx.conf` if not already present:
+
+```nginx
+map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+limit_req_zone $binary_remote_addr zone=goalgo_hook:10m rate=10r/s;
+```
+
+**3.7 Firewall**
+
+```sh
+sudo ufw allow 80,443/tcp
+# GOALGO listens on 127.0.0.1 only; keep the OpenAlgo port local too.
+```
+
+**3.8 Start / stop / restart / logs**
+
+```sh
+sudo systemctl start|stop|restart|status goalgo
+journalctl -u goalgo -f
+```
+
+`Restart=always` plus `systemctl enable` means GOALGO comes back after a crash
+or a reboot.
+
+**3.9 Rollback**
+
+Releases are timestamped directories and `current` is a symlink, so a rollback
+is a symlink swap:
+
+```sh
+ls /opt/goalgo/releases
+sudo ln -sfn /opt/goalgo/releases/<previous-timestamp> /opt/goalgo/current
+sudo systemctl restart goalgo
+curl -s http://127.0.0.1:3000/api/public/health
+```
+Database migrations are additive; if one must be undone, write a new reversing
+migration rather than editing history.
 
 ---
 
