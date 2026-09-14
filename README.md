@@ -51,18 +51,23 @@ and GOALGO (`app.goalgo.fairwoodit.com`, port 3000, service `goalgo`) as two
 independent applications.
 
 ```sh
-git clone <repo> /opt/goalgo/src && cd /opt/goalgo/src
+git clone https://github.com/OWNER/REPO.git /opt/goalgo/src && cd /opt/goalgo/src
 sudo ./deploy/deploy-all.sh --check   # inspect the server, change nothing
 sudo ./deploy/deploy-all.sh           # OpenAlgo (if absent) then GOALGO
 ./deploy/health-check.sh https://app.goalgo.fairwoodit.com
 ```
 
-`deploy/` contains `deploy-all.sh` (master), `install-openalgo.sh` (safe wrapper
-around OpenAlgo's **official** installer — it stops if OpenAlgo already exists),
-`deploy.sh` (GOALGO), `update.sh` (pull + rebuild + auto-rollback),
-`rollback.sh`, `health-check.sh`, the systemd unit, the nginx site and the
-production env template. Nothing here modifies OpenAlgo's files, service,
-database, vhost or certificate.
+For a **private** repository run `sudo ./deploy/setup-github-access.sh` first —
+it creates a read-only deploy key on the server and prints the public half to
+paste into GitHub → Settings → Deploy keys. See DEPLOYMENT.md Phase 2.
+
+`deploy/` contains `bootstrap.sh` (prerequisites + clone + handover),
+`setup-github-access.sh` (deploy key for private repos), `deploy-all.sh`
+(master), `install-openalgo.sh` (safe wrapper around OpenAlgo's **official**
+installer — it stops if OpenAlgo already exists), `deploy.sh` (GOALGO),
+`update.sh` (pull + rebuild + auto-rollback), `rollback.sh`, `health-check.sh`,
+the systemd unit, the nginx site and the production env template. Nothing here
+modifies OpenAlgo's files, service, database, vhost or certificate.
 
 ## Documentation
 

@@ -36,14 +36,57 @@ Both must print `210.56.147.234`.
 
 ## Phase 2 — get the code onto the server
 
+The GOALGO code lives in a GitHub repository. Connect this Lovable project to
+GitHub first (chat input → **+** → **GitHub → Connect project**); that creates
+the repository and keeps pushing every change to it automatically. Note the
+resulting URL — `https://github.com/OWNER/REPO` — and whether GitHub shows it as
+**Public** or **Private** (the badge next to the repository name).
+
+### A. Public repository — nothing to authorise
+
 ```bash
 ssh root@210.56.147.234
-apt-get update
-apt-get install -y git curl nginx openssl
+apt-get update && apt-get install -y git curl nginx openssl
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs
-mkdir -p /opt/goalgo && git clone <YOUR_REPO_URL> /opt/goalgo/src
+mkdir -p /opt/goalgo
+git clone https://github.com/OWNER/REPO.git /opt/goalgo/src
 cd /opt/goalgo/src
 ```
+
+### B. Private repository — one read-only key, pasted once
+
+A private repository needs proof that the server is allowed to read it. The
+safest way is a **deploy key**: a read-only key that works for this one
+repository and nothing else. No password, no personal access token, no
+GitHub login on the server.
+
+```bash
+ssh root@210.56.147.234
+apt-get update && apt-get install -y git curl openssl
+mkdir -p /opt/goalgo && cd /opt/goalgo
+curl -fsSLO https://raw.githubusercontent.com/OWNER/REPO/main/deploy/setup-github-access.sh   # or scp it up
+sudo bash setup-github-access.sh
+```
+
+The script prints one long line starting with `ssh-ed25519`. That is the
+**public** half — safe to share. The private half stays on the server and is
+never printed. Then, in your browser:
+
+1. Open your repository on GitHub
+2. **Settings → Deploy keys → Add deploy key**
+3. Title `goalgo-vps`, Key = paste the printed line
+4. Leave **Allow write access** unchecked
+5. **Add key**
+
+Back on the server:
+
+```bash
+ssh -T github-goalgo                                   # expect "successfully authenticated"
+git clone github-goalgo:OWNER/REPO /opt/goalgo/src
+cd /opt/goalgo/src
+```
+
+### Then, either way
 
 Inspect first, change nothing:
 
@@ -56,6 +99,23 @@ Then run the master deployment:
 ```bash
 sudo ./deploy/deploy-all.sh
 ```
+
+### Shortcut — `deploy/bootstrap.sh`
+
+`bootstrap.sh` does the prerequisites, the clone (or an in-place update if the
+checkout already exists) and the handover to `deploy-all.sh` in one go:
+
+```bash
+# public repository
+curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/deploy/bootstrap.sh \
+  | sudo REPO_URL=https://github.com/OWNER/REPO.git bash
+
+# private repository, after the deploy key is added
+sudo REPO_URL=github-goalgo:OWNER/REPO /opt/goalgo/src/deploy/bootstrap.sh
+```
+
+Add `CHECK_ONLY=1` to stop after the inspection pass. Re-running is safe: it
+updates the checkout instead of re-cloning and never overwrites OpenAlgo.
 
 ## Phase 3 — what `deploy-all.sh` does
 
