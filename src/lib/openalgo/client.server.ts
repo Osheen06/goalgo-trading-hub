@@ -4,7 +4,7 @@
  * Contract source: https://docs.openalgo.in/api-documentation/v1
  * - Base URL:  <OPENALGO_BASE_URL>/api/v1
  * - Auth:      POST body field `apikey` (GET endpoints use ?apikey=)
- * - Responses: { status: "success" | "error", data?: ..., message?: ... }
+ * - Responses: { status: "success" | "error", data?: ... | undefined, message?: ... } | undefined
  *
  * The OpenAlgo API key is read from the server environment only. It is never
  * sent to, stored in, or logged by the browser.
@@ -15,14 +15,14 @@ export type OpenAlgoResult<T = unknown> = {
   configured: boolean;
   httpStatus: number;
   latencyMs: number;
-  data?: T;
-  error?: string;
+  data?: T | undefined;
+  error?: string | undefined;
 };
 
 export const OPENALGO_NOT_CONFIGURED =
   "OpenAlgo is not configured. Set OPENALGO_BASE_URL and OPENALGO_API_KEY on the server.";
 
-function readConfig(): { baseUrl?: string; apiKey?: string } {
+function readConfig(): { baseUrl?: string | undefined; apiKey?: string } { | undefined
   const baseUrl = process.env["OPENALGO_BASE_URL"]?.trim().replace(/\/+$/, "");
   const apiKey = process.env["OPENALGO_API_KEY"]?.trim();
   return { baseUrl: baseUrl || undefined, apiKey: apiKey || undefined };
@@ -38,7 +38,7 @@ export function isOpenAlgoConfigured(): boolean {
 }
 
 /** Remove anything secret-looking before an error ever reaches a browser. */
-export function sanitizeMessage(input: unknown, apiKey?: string): string {
+export function sanitizeMessage(input: unknown, apiKey?: string | undefined): string {
   let text =
     typeof input === "string"
       ? input
@@ -89,7 +89,7 @@ export async function oaPost<T = unknown>(
       parsed = undefined;
     }
 
-    const payload = parsed as { status?: string; data?: T; message?: string } | undefined;
+    const payload = parsed as { status?: string | undefined; data?: T | undefined; message?: string } | undefined;
 
     if (!res.ok || payload?.status === "error") {
       return {

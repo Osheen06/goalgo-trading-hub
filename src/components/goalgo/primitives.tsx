@@ -11,8 +11,8 @@ export function PageHeader({
   actions,
 }: {
   title: string;
-  description?: string;
-  actions?: ReactNode;
+  description?: string | undefined;
+  actions?: ReactNode | undefined;
 }) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
@@ -34,11 +34,11 @@ export function Panel({
   children,
   className,
 }: {
-  title?: string;
-  subtitle?: string;
-  actions?: ReactNode;
+  title?: string | undefined;
+  subtitle?: string | undefined;
+  actions?: ReactNode | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <section className={cn("panel overflow-hidden", className)}>
@@ -78,7 +78,7 @@ export function StatusDot({ state }: { state: ConnectionState }) {
   return <span className={cn("inline-block size-2 rounded-full", STATE_TONE[state])} />;
 }
 
-export function StatusPill({ state, label }: { state: ConnectionState; label?: string }) {
+export function StatusPill({ state, label }: { state: ConnectionState; label?: string } | undefined) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium">
       <StatusDot state={state} />
@@ -94,7 +94,7 @@ export function StatusRow({
 }: {
   label: string;
   state: ConnectionState;
-  value?: string | null;
+  value?: string | null | undefined;
 }) {
   return (
     <div className="flex items-center justify-between gap-3 border-b border-border py-2.5 last:border-0">
@@ -116,9 +116,9 @@ export function Metric({
 }: {
   label: string;
   value: string;
-  hint?: string;
-  tone?: "bull" | "bear" | "flat";
-  loading?: boolean;
+  hint?: string | undefined;
+  tone?: "bull" | "bear" | "flat" | undefined;
+  loading?: boolean | undefined;
 }) {
   return (
     <div className="panel p-4">
@@ -141,7 +141,7 @@ export function Metric({
   );
 }
 
-export function LoadingState({ label = "Loading…" }: { label?: string }) {
+export function LoadingState({ label = "Loading…" }: { label?: string } | undefined) {
   return (
     <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
       <Loader2 className="size-4 animate-spin" />
@@ -150,7 +150,7 @@ export function LoadingState({ label = "Loading…" }: { label?: string }) {
   );
 }
 
-export function EmptyState({ title, description }: { title: string; description?: string }) {
+export function EmptyState({ title, description }: { title: string; description?: string } | undefined) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
       <Inbox className="size-6 text-muted-foreground" />
@@ -167,9 +167,9 @@ export function ErrorState({
   message,
   onRetry,
 }: {
-  title?: string;
-  message?: string | null;
-  onRetry?: () => void;
+  title?: string | undefined;
+  message?: string | null | undefined;
+  onRetry?: ( | undefined) => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
@@ -193,8 +193,8 @@ export function NotConfiguredState({
   message = "GOALGO is not connected to an OpenAlgo server yet.",
   detail,
 }: {
-  message?: string;
-  detail?: string;
+  message?: string | undefined;
+  detail?: string | undefined;
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
@@ -217,9 +217,9 @@ export function DataGate<T>({
   loadingLabel,
 }: {
   isLoading: boolean;
-  envelope?: { ok: boolean; configured: boolean; data: T | null; error: string | null } | undefined;
-  onRetry?: () => void;
-  loadingLabel?: string;
+  envelope?: { ok: boolean | undefined; configured: boolean; data: T | null; error: string | null } | undefined;
+  onRetry?: ( | undefined) => void;
+  loadingLabel?: string | undefined;
   children: (data: T) => ReactNode;
 }) {
   if (isLoading || !envelope) return <LoadingState label={loadingLabel} />;
@@ -235,7 +235,7 @@ export function DataGate<T>({
   return <>{children(envelope.data)}</>;
 }
 
-export function CopyButton({ value, label = "Copy" }: { value: string; label?: string }) {
+export function CopyButton({ value, label = "Copy" }: { value: string; label?: string } | undefined) {
   return (
     <Button
       size="sm"
