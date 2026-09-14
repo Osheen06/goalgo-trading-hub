@@ -287,15 +287,19 @@ function AuthPage() {
             </TabsContent>
           </Tabs>
 
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or
-            <span className="h-px flex-1 bg-border" />
-          </div>
+          {googleAvailable ? (
+            <>
+              <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                or
+                <span className="h-px flex-1 bg-border" />
+              </div>
 
-          <Button variant="secondary" className="w-full" onClick={google} disabled={busy}>
-            Continue with Google
-          </Button>
+              <Button variant="secondary" className="w-full" onClick={google} disabled={busy}>
+                Continue with Google
+              </Button>
+            </>
+          ) : null}
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
