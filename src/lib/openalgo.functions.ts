@@ -65,20 +65,12 @@ export const getSystemStatus = createServerFn({ method: "POST" })
     const { oaPost, getOpenAlgoBaseUrl, isOpenAlgoConfigured } = await import(
       "./openalgo/client.server"
     );
+    const { resolveEnvironment, unconfiguredStatus } = await import("./openalgo/status");
     const checkedAt = new Date().toISOString();
+    const environment = resolveEnvironment(process.env);
 
     if (!isOpenAlgoConfigured()) {
-      return {
-        configured: false,
-        baseUrl: getOpenAlgoBaseUrl() ?? null,
-        openalgo: "not_configured",
-        broker: "not_configured",
-        brokerName: null,
-        message: "OpenAlgo server address or API key is not configured.",
-        latencyMs: null,
-        checkedAt,
-        analyzerMode: null,
-      };
+      return unconfiguredStatus(environment, getOpenAlgoBaseUrl() ?? null, checkedAt);
     }
 
     const ping = await oaPost<{ message?: string; broker?: string }>("/ping");
