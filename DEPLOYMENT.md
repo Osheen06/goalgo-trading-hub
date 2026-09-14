@@ -12,7 +12,7 @@ Names live in `.env.example`; real values are entered on the server and never co
 
 | Variable | What it is | Where you get it |
 | --- | --- | --- |
-| `APP_URL` | Public address of GOALGO, e.g. `https://goalgo.fairwoodit.com` | Your domain |
+| `APP_URL` | Public address of GOALGO, e.g. `https://app.goalgo.fairwoodit.com` | Your domain |
 | `OPENALGO_BASE_URL` | Address of your OpenAlgo instance, e.g. `http://127.0.0.1:5000` | Your OpenAlgo install |
 | `OPENALGO_API_KEY` | OpenAlgo API key | OpenAlgo → API key page |
 | `OPENALGO_STRATEGY_WEBHOOK_URL` | OpenAlgo strategy webhook, `.../strategy/webhook/<token>` | OpenAlgo → your strategy |
@@ -181,7 +181,7 @@ migration rather than editing history.
 - [ ] OpenAlgo running and broker logged in
 - [ ] All server environment variables set
 - [ ] Database migrations applied
-- [ ] HTTPS live on goalgo.fairwoodit.com, no ngrok
+- [ ] HTTPS live on app.goalgo.fairwoodit.com (OpenAlgo still answering on goalgo.fairwoodit.com), no ngrok
 - [ ] Owner account created and `GOALGO_OWNER_USER_ID` set
 - [ ] OpenAlgo and Broker pages both verified
 - [ ] TradingView alert delivered end to end
