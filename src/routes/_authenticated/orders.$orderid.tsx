@@ -125,6 +125,28 @@ function OrderDetail() {
               Refresh
             </Button>
             {cancellable ? (
+              <OrderTicket
+                mode="modify"
+                orderid={orderid}
+                triggerLabel="Modify order"
+                triggerVariant="secondary"
+                defaults={{
+                  symbol: str("symbol") === "—" ? "" : str("symbol"),
+                  exchange: str("exchange") === "—" ? "NSE" : str("exchange"),
+                  action: str("action") === "—" ? "BUY" : str("action"),
+                  quantity: str("quantity") === "—" ? "1" : str("quantity"),
+                  pricetype: str("pricetype") === "—" ? "MARKET" : str("pricetype"),
+                  product: str("product") === "—" ? "MIS" : str("product"),
+                  price: str("price") === "—" ? "0" : str("price"),
+                  trigger_price: str("trigger_price") === "—" ? "0" : str("trigger_price"),
+                }}
+                onDone={() =>
+                  void queryClient.invalidateQueries({ queryKey: ["orderstatus", orderid] })
+                }
+              />
+            ) : null}
+            {cancellable ? (
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button size="sm" variant="destructive">
