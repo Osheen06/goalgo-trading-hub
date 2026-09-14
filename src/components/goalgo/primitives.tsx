@@ -78,7 +78,7 @@ export function StatusDot({ state }: { state: ConnectionState }) {
   return <span className={cn("inline-block size-2 rounded-full", STATE_TONE[state])} />;
 }
 
-export function StatusPill({ state, label }: { state: ConnectionState; label?: string } | undefined) {
+export function StatusPill({ state, label }: { state: ConnectionState; label?: string | undefined }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium">
       <StatusDot state={state} />
@@ -141,7 +141,7 @@ export function Metric({
   );
 }
 
-export function LoadingState({ label = "Loading…" }: { label?: string } | undefined) {
+export function LoadingState({ label = "Loading…" }: { label?: string | undefined }) {
   return (
     <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
       <Loader2 className="size-4 animate-spin" />
@@ -150,7 +150,7 @@ export function LoadingState({ label = "Loading…" }: { label?: string } | unde
   );
 }
 
-export function EmptyState({ title, description }: { title: string; description?: string } | undefined) {
+export function EmptyState({ title, description }: { title: string; description?: string | undefined }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
       <Inbox className="size-6 text-muted-foreground" />
@@ -235,7 +235,7 @@ export function DataGate<T>({
   return <>{children(envelope.data)}</>;
 }
 
-export function CopyButton({ value, label = "Copy" }: { value: string; label?: string } | undefined) {
+export function CopyButton({ value, label = "Copy" }: { value: string; label?: string | undefined }) {
   return (
     <Button
       size="sm"

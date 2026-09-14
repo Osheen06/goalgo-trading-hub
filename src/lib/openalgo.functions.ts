@@ -29,7 +29,7 @@ type AuthedContext = {
 };
 
 function envelope<T>(
-  r: { ok: boolean; configured: boolean; data?: T; error?: string; latencyMs: number },
+  r: { ok: boolean; configured: boolean; data?: T | undefined; error?: string | undefined; latencyMs: number },
 ): ApiEnvelope<T> {
   return {
     ok: r.ok,
