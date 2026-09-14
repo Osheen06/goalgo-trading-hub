@@ -46,16 +46,21 @@ registers becomes the owner of the deployment and registration then closes.
 
 ## Production deployment (Ubuntu 24 VPS)
 
-The VPS hosts OpenAlgo (`goalgo.fairwoodit.com`, port 5000, service `openalgo`)
-and GOALGO (`app.goalgo.fairwoodit.com`, port 3000, service `goalgo`) as two
-independent applications.
+One public domain, no extra DNS record. The VPS hosts GOALGO publicly at
+`https://goalgo.fairwoodit.com` (port 3000, service `goalgo`) and OpenAlgo
+privately on `http://127.0.0.1:5000` (service `openalgo`, never published).
+nginx terminates HTTPS and proxies to GOALGO; GOALGO reaches OpenAlgo over
+localhost only.
 
 ```sh
 git clone https://github.com/OWNER/REPO.git /opt/goalgo/src && cd /opt/goalgo/src
 sudo ./deploy/deploy-all.sh --check   # inspect the server, change nothing
 sudo ./deploy/deploy-all.sh           # OpenAlgo (if absent) then GOALGO
-./deploy/health-check.sh https://app.goalgo.fairwoodit.com
+./deploy/health-check.sh https://goalgo.fairwoodit.com
 ```
+
+The OpenAlgo admin UI stays private; reach it with an SSH tunnel:
+`ssh -N -L 5000:127.0.0.1:5000 root@<vps>` then open `http://localhost:5000`.
 
 For a **private** repository run `sudo ./deploy/setup-github-access.sh` first —
 it creates a read-only deploy key on the server and prints the public half to

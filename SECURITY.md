@@ -107,10 +107,16 @@ The Lovable workspace tracks a `.env` file that contains **only public values**
 secret is ever written there: production secrets exist only in
 `/etc/goalgo/goalgo.env` on the VPS. Any other `.env*` file is git-ignored.
 
-## Two applications, one server
+## Two applications, one server, one public domain
 
 OpenAlgo and GOALGO run on the same VPS as separate services with separate
-configuration files and separate secrets:
+configuration files and separate secrets. Only GOALGO is published:
+nginx serves `https://goalgo.fairwoodit.com` and proxies to GOALGO on
+127.0.0.1:3000, while OpenAlgo listens on 127.0.0.1:5000 and is not reachable
+from the internet. Its admin UI is reached through an SSH tunnel
+(`ssh -N -L 5000:127.0.0.1:5000 root@<vps>`). If a broker's OAuth flow requires
+a public callback, only that exact path is proxied to OpenAlgo, via
+`OPENALGO_PUBLIC_PATHS`; no admin or API surface is exposed.
 
 | | OpenAlgo | GOALGO |
 | --- | --- | --- |
@@ -119,7 +125,9 @@ configuration files and separate secrets:
 | API key | issued here | consumed server-side only |
 
 GOALGO's scripts never read, write, print or back up OpenAlgo's configuration;
-`deploy/install-openalgo.sh` aborts rather than touch an existing install.
+`deploy/install-openalgo.sh` aborts rather than touch an existing install. When
+both want the same hostname, GOALGO removes only the conflicting
+`sites-enabled` symlink — the vhost file and the certificate are preserved.
 
 ## VPS access credentials
 
