@@ -155,30 +155,41 @@ if [ "$DO_DNS" -eq 0 ]; then
 else
   RESOLVED="$( { getent ahostsv4 "$DOMAIN" 2>/dev/null || true; } | awk '{print $1}' | sort -u | tr '\n' ' ' | sed 's/ $//')"
   if [ -z "$RESOLVED" ]; then
-    die "$DOMAIN does not resolve yet. MANUAL ACTION: create this DNS record at your domain provider, wait a few minutes, then re-run:
-           Type: A    Name: app    Value: $EXPECTED_IP    TTL: 300
+    die "$DOMAIN does not resolve yet. MANUAL ACTION: confirm this existing DNS record at your domain provider, wait a few minutes, then re-run:
+           Type: A    Name: goalgo (or @, as your zone requires)    Value: $EXPECTED_IP    TTL: 300
          (Deploy anyway without HTTPS using: sudo ./deploy/deploy.sh --skip-dns)"
   elif ! grep -qw "$EXPECTED_IP" <<<"$RESOLVED"; then
     die "$DOMAIN resolves to '$RESOLVED' but this deployment expects $EXPECTED_IP.
-         MANUAL ACTION: fix the A record (Type: A, Name: app, Value: $EXPECTED_IP) or re-run with GOALGO_EXPECTED_IP=<correct ip>."
+         MANUAL ACTION: fix the A record (Type: A, Name: goalgo, Value: $EXPECTED_IP) or re-run with GOALGO_EXPECTED_IP=<correct ip>."
   else
     ok "$DOMAIN -> $EXPECTED_IP"
   fi
 fi
 
-# --- 3. OpenAlgo safety check ----------------------------------------------
-step "Verifying the existing OpenAlgo installation is untouched"
+# --- 3. OpenAlgo safety check (private, localhost only) ---------------------
+step "Checking the local OpenAlgo service (never modified by this script)"
 OA_HOST="$(sed -E 's#^https?://##; s#/.*$##' <<<"$OPENALGO_URL_DEFAULT")"
-[ "$OA_HOST" != "$DOMAIN" ] || die "GOALGO domain ($DOMAIN) is identical to the OpenAlgo domain ($OA_HOST). Refusing to continue — OpenAlgo must keep its own hostname."
+case "$OA_HOST" in
+  127.0.0.1|localhost|"[::1]") ok "OPENALGO_BASE_URL is local ($OPENALGO_URL_DEFAULT) — OpenAlgo is not published" ;;
+  *) echo "  [warn] OPENALGO_BASE_URL points at $OA_HOST, not localhost. The single-domain design expects http://127.0.0.1:5000." ;;
+esac
 OA_CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$OPENALGO_URL_DEFAULT" || true)"
 if [ "$OA_CODE" = "000" ]; then
-  echo "  [warn] $OPENALGO_URL_DEFAULT did not answer from this host — GOALGO will still deploy, but check OpenAlgo separately."
+  echo "  [warn] $OPENALGO_URL_DEFAULT did not answer. GOALGO will still deploy and will honestly report OpenAlgo as unreachable."
+  echo "         Check it with: systemctl status openalgo ; journalctl -u openalgo -n 100 --no-pager"
 else
-  ok "OpenAlgo at $OPENALGO_URL_DEFAULT answers HTTP $OA_CODE (left untouched)"
+  ok "OpenAlgo answers on $OPENALGO_URL_DEFAULT (HTTP $OA_CODE) — service left untouched"
 fi
 if [ "$DO_NGINX" -eq 1 ] && [ -d /etc/nginx/sites-enabled ]; then
-  OA_SITE="$(grep -rl "server_name[^;]*\b${OA_HOST}\b" /etc/nginx/sites-enabled/ 2>/dev/null | head -n1 || true)"
-  [ -n "$OA_SITE" ] && ok "OpenAlgo nginx site detected at $OA_SITE — this script will not modify it"
+  # OpenAlgo's official installer may have created its own vhost for this same
+  # hostname. Only one vhost can own it. Disable the symlink, keep the file.
+  while IFS= read -r site; do
+    [ -n "$site" ] || continue
+    [ "$(basename "$site")" = "$DOMAIN" ] && continue
+    mv -f "$site" "/etc/nginx/sites-available/$(basename "$site").disabled-by-goalgo" 2>/dev/null \
+      || rm -f "$site"
+    ok "another vhost claimed $DOMAIN ($site) — its symlink was disabled; the file in sites-available is untouched"
+  done < <(grep -rl "server_name[^;]*\b${DOMAIN}\b" /etc/nginx/sites-enabled/ 2>/dev/null || true)
 fi
 
 # --- 4. port conflict detection --------------------------------------------
