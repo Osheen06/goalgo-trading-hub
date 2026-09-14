@@ -163,31 +163,53 @@ function OpenAlgoPage() {
           <LoadingState />
         ) : (
           <div className="space-y-0">
+            {preview ? (
+              <p className="mb-3 rounded-md border border-border bg-secondary p-3 text-xs text-muted-foreground">
+                Server configuration is only visible in the production environment. Your production
+                settings are untouched.
+              </p>
+            ) : null}
             <StatusRow
               label="OpenAlgo address"
-              state={config.data?.openalgoBaseUrl ? "connected" : "not_configured"}
-              value={config.data?.openalgoBaseUrl ?? "Not configured"}
+              state={
+                config.data?.openalgoBaseUrl ? "connected" : preview ? "unavailable" : "not_configured"
+              }
+              value={config.data?.openalgoBaseUrl ?? missing}
             />
             <StatusRow
               label="OpenAlgo API key"
-              state={config.data?.openalgoApiKeyConfigured ? "connected" : "not_configured"}
-              value={config.data?.openalgoApiKeyConfigured ? "Configured (hidden)" : "Not configured"}
+              state={
+                config.data?.openalgoApiKeyConfigured
+                  ? "connected"
+                  : preview
+                    ? "unavailable"
+                    : "not_configured"
+              }
+              value={config.data?.openalgoApiKeyConfigured ? "Configured (hidden)" : missing}
             />
             <StatusRow
               label="OpenAlgo strategy webhook"
               state={
-                config.data?.openalgoStrategyWebhookConfigured ? "connected" : "not_configured"
+                config.data?.openalgoStrategyWebhookConfigured
+                  ? "connected"
+                  : preview
+                    ? "unavailable"
+                    : "not_configured"
               }
               value={
-                config.data?.openalgoStrategyWebhookConfigured
-                  ? "Configured (hidden)"
-                  : "Not configured"
+                config.data?.openalgoStrategyWebhookConfigured ? "Configured (hidden)" : missing
               }
             />
             <StatusRow
               label="GOALGO webhook token"
-              state={config.data?.webhookTokenConfigured ? "connected" : "not_configured"}
-              value={config.data?.webhookTokenConfigured ? "Configured (hidden)" : "Not configured"}
+              state={
+                config.data?.webhookTokenConfigured
+                  ? "connected"
+                  : preview
+                    ? "unavailable"
+                    : "not_configured"
+              }
+              value={config.data?.webhookTokenConfigured ? "Configured (hidden)" : missing}
             />
           </div>
         )}
