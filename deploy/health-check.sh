@@ -33,10 +33,10 @@ if [ -z "${SKIP_OPENALGO_CHECK:-}" ]; then
   check "OpenAlgo answers on localhost" \
     "curl -o /dev/null -sS -w '%{http_code}' --max-time 15 '$OPENALGO_LOCAL' | grep -qE '200|301|302|401|403' && echo 'responding'"
   # OpenAlgo must stay private: its port must not be published on the domain.
-  if [[ "$BASE" == http* ]]; then
-    host="${BASE#*://}"; host="${host%%/*}"; host="${host%%:*}"
-    check "OpenAlgo port NOT public" \
-      "curl -o /dev/null -sS -w '%{http_code}' --max-time 8 'http://$host:5000' 2>/dev/null | grep -qE '000' && echo 'closed to the internet' || { [ \"\$(curl -o /dev/null -sS -w '%{http_code}' --max-time 8 'http://$host:5000' 2>/dev/null)\" = '000' ] && echo closed; }"
+  host="${BASE#*://}"; host="${host%%/*}"; host="${host%%:*}"
+  if [ -n "$host" ] && [ "$host" != "127.0.0.1" ] && [ "$host" != "localhost" ]; then
+    check "OpenAlgo port 5000 not public" \
+      "[ \"\$(curl -o /dev/null -s -w '%{http_code}' --max-time 8 'http://$host:5000' || echo 000)\" = 000 ] && echo 'closed to the internet'"
   fi
 fi
 
