@@ -13,9 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFundsRouteImport } from './routes/_authenticated/funds'
 import { Route as AuthenticatedHoldingsRouteImport } from './routes/_authenticated/holdings'
+import { Route as AuthenticatedOpenalgoRouteImport } from './routes/_authenticated/openalgo'
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
@@ -41,6 +43,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -54,6 +61,11 @@ const AuthenticatedFundsRoute = AuthenticatedFundsRouteImport.update({
 const AuthenticatedHoldingsRoute = AuthenticatedHoldingsRouteImport.update({
   id: '/holdings',
   path: '/holdings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOpenalgoRoute = AuthenticatedOpenalgoRouteImport.update({
+  id: '/openalgo',
+  path: '/openalgo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPositionsRoute = AuthenticatedPositionsRouteImport.update({
@@ -89,9 +101,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
   '/holdings': typeof AuthenticatedHoldingsRoute
+  '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
@@ -102,9 +116,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
   '/holdings': typeof AuthenticatedHoldingsRoute
+  '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
@@ -117,9 +133,11 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/funds': typeof AuthenticatedFundsRoute
   '/_authenticated/holdings': typeof AuthenticatedHoldingsRoute
+  '/_authenticated/openalgo': typeof AuthenticatedOpenalgoRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
   '/_authenticated/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
@@ -132,9 +150,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/activity'
     | '/dashboard'
     | '/funds'
     | '/holdings'
+    | '/openalgo'
     | '/positions'
     | '/signals'
     | '/orders/$orderid'
@@ -145,9 +165,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/activity'
     | '/dashboard'
     | '/funds'
     | '/holdings'
+    | '/openalgo'
     | '/positions'
     | '/signals'
     | '/orders/$orderid'
@@ -159,9 +181,11 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/activity'
     | '/_authenticated/dashboard'
     | '/_authenticated/funds'
     | '/_authenticated/holdings'
+    | '/_authenticated/openalgo'
     | '/_authenticated/positions'
     | '/_authenticated/signals'
     | '/_authenticated/orders/$orderid'
@@ -207,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/activity': {
+      id: '/_authenticated/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AuthenticatedActivityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -226,6 +257,13 @@ declare module '@tanstack/react-router' {
       path: '/holdings'
       fullPath: '/holdings'
       preLoaderRoute: typeof AuthenticatedHoldingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/openalgo': {
+      id: '/_authenticated/openalgo'
+      path: '/openalgo'
+      fullPath: '/openalgo'
+      preLoaderRoute: typeof AuthenticatedOpenalgoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/positions': {
@@ -267,9 +305,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFundsRoute: typeof AuthenticatedFundsRoute
   AuthenticatedHoldingsRoute: typeof AuthenticatedHoldingsRoute
+  AuthenticatedOpenalgoRoute: typeof AuthenticatedOpenalgoRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
   AuthenticatedOrdersOrderidRoute: typeof AuthenticatedOrdersOrderidRoute
@@ -277,9 +317,11 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFundsRoute: AuthenticatedFundsRoute,
   AuthenticatedHoldingsRoute: AuthenticatedHoldingsRoute,
+  AuthenticatedOpenalgoRoute: AuthenticatedOpenalgoRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
   AuthenticatedOrdersOrderidRoute: AuthenticatedOrdersOrderidRoute,
