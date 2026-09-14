@@ -1,0 +1,38 @@
+; /etc/systemd/system/goalgo.service
+; GOALGO application service. Runs as its own unprivileged user and never
+; touches the existing OpenAlgo installation or its data.
+[Unit]
+Description=GOALGO trading console
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=goalgo
+Group=goalgo
+WorkingDirectory=/opt/goalgo/current
+; Secrets live in this file only. chmod 600, owned by root:goalgo, never in git.
+EnvironmentFile=/etc/goalgo/goalgo.env
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOST=127.0.0.1
+ExecStart=/usr/bin/node /opt/goalgo/current/.output/server/index.mjs
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=goalgo
+
+; Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/goalgo
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
