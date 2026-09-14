@@ -37,11 +37,13 @@ describe.runIf(live)("unauthenticated access is blocked on every user-owned tabl
   }
 
   it("cannot write to another user's data without a session", async () => {
-    const { error } = await anon!
+    const { data, error } = await anon!
       .from("app_settings")
       .update({ automated_trading_enabled: true })
-      .neq("user_id", "00000000-0000-0000-0000-000000000000");
-    expect(error !== null).toBe(true);
+      .neq("user_id", "00000000-0000-0000-0000-000000000000")
+      .select("user_id");
+    // Refused outright, or silently matched zero rows — never a real write.
+    expect(error ? true : (data ?? []).length === 0).toBe(true);
   });
 
   it("cannot read a specific user's row by guessing an id", async () => {
