@@ -46,16 +46,23 @@ registers becomes the owner of the deployment and registration then closes.
 
 ## Production deployment (Ubuntu 24 VPS)
 
+The VPS hosts OpenAlgo (`goalgo.fairwoodit.com`, port 5000, service `openalgo`)
+and GOALGO (`app.goalgo.fairwoodit.com`, port 3000, service `goalgo`) as two
+independent applications.
+
 ```sh
 git clone <repo> /opt/goalgo/src && cd /opt/goalgo/src
-sudo ./deploy/deploy.sh          # checks, secrets prompt, build, service, nginx, TLS
+sudo ./deploy/deploy-all.sh --check   # inspect the server, change nothing
+sudo ./deploy/deploy-all.sh           # OpenAlgo (if absent) then GOALGO
 ./deploy/health-check.sh https://app.goalgo.fairwoodit.com
 ```
 
-`deploy/` also contains `update.sh` (pull + rebuild + auto-rollback),
+`deploy/` contains `deploy-all.sh` (master), `install-openalgo.sh` (safe wrapper
+around OpenAlgo's **official** installer — it stops if OpenAlgo already exists),
+`deploy.sh` (GOALGO), `update.sh` (pull + rebuild + auto-rollback),
 `rollback.sh`, `health-check.sh`, the systemd unit, the nginx site and the
-production env template. The scripts never touch the existing OpenAlgo
-installation on the same server.
+production env template. Nothing here modifies OpenAlgo's files, service,
+database, vhost or certificate.
 
 ## Documentation
 

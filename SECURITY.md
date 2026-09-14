@@ -106,3 +106,25 @@ The Lovable workspace tracks a `.env` file that contains **only public values**
 `VITE_` twins) — the same values shipped in the browser bundle. No server-side
 secret is ever written there: production secrets exist only in
 `/etc/goalgo/goalgo.env` on the VPS. Any other `.env*` file is git-ignored.
+
+## Two applications, one server
+
+OpenAlgo and GOALGO run on the same VPS as separate services with separate
+configuration files and separate secrets:
+
+| | OpenAlgo | GOALGO |
+| --- | --- | --- |
+| Secrets file | `/var/python/openalgo/.env` (installer-owned) | `/etc/goalgo/goalgo.env`, mode 600, `root:goalgo` |
+| Broker credentials | stored here, entered in the official installer's hidden prompts | never present |
+| API key | issued here | consumed server-side only |
+
+GOALGO's scripts never read, write, print or back up OpenAlgo's configuration;
+`deploy/install-openalgo.sh` aborts rather than touch an existing install.
+
+## VPS access credentials
+
+The VPS root password (or SSH key) is **never** stored in this repository, in
+`.env`, in any deployment script, in documentation or in logs, and is never sent
+to or requested by the application. SSH is performed manually by the operator.
+If that password has been exposed anywhere, change it on the server
+(`passwd`) and prefer key-only SSH (`PasswordAuthentication no`).
