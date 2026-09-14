@@ -8,10 +8,14 @@ export type ConnectionState =
   | "checking"
   | "auth_required"
   | "error"
-  | "not_configured";
+  | "not_configured"
+  /** This runtime (preview/dev) has no access to the private OpenAlgo server. */
+  | "unavailable";
 
 export type SystemStatus = {
   configured: boolean;
+  /** "production" = the deployed GOALGO server, "preview" = Lovable/dev runtime. */
+  environment: "production" | "preview";
   baseUrl: string | null;
   openalgo: ConnectionState;
   broker: ConnectionState;
