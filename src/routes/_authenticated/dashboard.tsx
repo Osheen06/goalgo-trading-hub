@@ -202,7 +202,12 @@ function Dashboard() {
             envelope={
               connected
                 ? funds.data
-                : { ok: false, configured: s?.configured ?? false, data: null, error: s?.message ?? "Broker is not connected." }
+                : {
+                    ok: false,
+                    configured: s?.configured ?? false,
+                    data: null,
+                    error: s?.message ?? "Broker is not connected.",
+                  }
             }
             onRetry={() => void funds.refetch()}
             loadingLabel="Loading account funds…"
@@ -231,7 +236,9 @@ function Dashboard() {
       <Panel title="Today's trading summary">
         {!connected ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Trading figures appear once OpenAlgo and your broker are connected.
+            {s?.environment === "preview"
+              ? "Live trading figures are available only in the production environment."
+              : "Trading figures appear once OpenAlgo and your broker are connected."}
           </p>
         ) : orders.isLoading || positions.isLoading ? (
           <LoadingState label="Loading trading summary…" />

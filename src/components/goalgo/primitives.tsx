@@ -63,6 +63,7 @@ const STATE_LABEL: Record<ConnectionState, string> = {
   auth_required: "Authentication required",
   error: "Error",
   not_configured: "Not configured",
+  unavailable: "Production only",
 };
 
 const STATE_TONE: Record<ConnectionState, string> = {
@@ -72,6 +73,7 @@ const STATE_TONE: Record<ConnectionState, string> = {
   auth_required: "bg-warn",
   error: "bg-bear",
   not_configured: "bg-neutral-state",
+  unavailable: "bg-neutral-state",
 };
 
 export function StatusDot({ state }: { state: ConnectionState }) {

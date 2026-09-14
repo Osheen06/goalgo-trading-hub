@@ -65,20 +65,12 @@ export const getSystemStatus = createServerFn({ method: "POST" })
     const { oaPost, getOpenAlgoBaseUrl, isOpenAlgoConfigured } = await import(
       "./openalgo/client.server"
     );
+    const { resolveEnvironment, unconfiguredStatus } = await import("./openalgo/status");
     const checkedAt = new Date().toISOString();
+    const environment = resolveEnvironment(process.env);
 
     if (!isOpenAlgoConfigured()) {
-      return {
-        configured: false,
-        baseUrl: getOpenAlgoBaseUrl() ?? null,
-        openalgo: "not_configured",
-        broker: "not_configured",
-        brokerName: null,
-        message: "OpenAlgo server address or API key is not configured.",
-        latencyMs: null,
-        checkedAt,
-        analyzerMode: null,
-      };
+      return unconfiguredStatus(environment, getOpenAlgoBaseUrl() ?? null, checkedAt);
     }
 
     const ping = await oaPost<{ message?: string; broker?: string }>("/ping");
@@ -121,6 +113,7 @@ export const getSystemStatus = createServerFn({ method: "POST" })
 
     return {
       configured: true,
+      environment,
       baseUrl: getOpenAlgoBaseUrl() ?? null,
       openalgo,
       broker,
@@ -396,6 +389,7 @@ export const getQuote = createServerFn({ method: "POST" })
 export const getIntegrationConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (): Promise<{
+    environment: "production" | "preview";
     openalgoBaseUrl: string | null;
     openalgoApiKeyConfigured: boolean;
     webhookTokenConfigured: boolean;
@@ -404,9 +398,11 @@ export const getIntegrationConfig = createServerFn({ method: "POST" })
     appUrl: string | null;
   }> => {
     const { getOpenAlgoBaseUrl } = await import("./openalgo/client.server");
+    const { resolveEnvironment } = await import("./openalgo/status");
     const appUrl = process.env["APP_URL"]?.replace(/\/+$/, "") || null;
     const tokenSet = Boolean(process.env["GOALGO_WEBHOOK_TOKEN"]);
     return {
+      environment: resolveEnvironment(process.env),
       openalgoBaseUrl: getOpenAlgoBaseUrl() ?? null,
       openalgoApiKeyConfigured: Boolean(process.env["OPENALGO_API_KEY"]),
       webhookTokenConfigured: tokenSet,
