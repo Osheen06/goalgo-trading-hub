@@ -18,9 +18,11 @@ import { Route as AuthenticatedBrokerRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFundsRouteImport } from './routes/_authenticated/funds'
 import { Route as AuthenticatedHoldingsRouteImport } from './routes/_authenticated/holdings'
+import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
 import { Route as AuthenticatedOpenalgoRouteImport } from './routes/_authenticated/openalgo'
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
+import { Route as AuthenticatedStrategiesRouteImport } from './routes/_authenticated/strategies'
 import { Route as AuthenticatedTradingviewRouteImport } from './routes/_authenticated/tradingview'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
 import { Route as AuthenticatedOrdersOrderidRouteImport } from './routes/_authenticated/orders.$orderid'
@@ -70,6 +72,11 @@ const AuthenticatedHoldingsRoute = AuthenticatedHoldingsRouteImport.update({
   path: '/holdings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOpenalgoRoute = AuthenticatedOpenalgoRouteImport.update({
   id: '/openalgo',
   path: '/openalgo',
@@ -83,6 +90,11 @@ const AuthenticatedPositionsRoute = AuthenticatedPositionsRouteImport.update({
 const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
   id: '/signals',
   path: '/signals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStrategiesRoute = AuthenticatedStrategiesRouteImport.update({
+  id: '/strategies',
+  path: '/strategies',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTradingviewRoute =
@@ -119,9 +131,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
   '/holdings': typeof AuthenticatedHoldingsRoute
+  '/market': typeof AuthenticatedMarketRoute
   '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/signals': typeof AuthenticatedSignalsRoute
+  '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -136,9 +150,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
   '/holdings': typeof AuthenticatedHoldingsRoute
+  '/market': typeof AuthenticatedMarketRoute
   '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/signals': typeof AuthenticatedSignalsRoute
+  '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
@@ -155,9 +171,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/funds': typeof AuthenticatedFundsRoute
   '/_authenticated/holdings': typeof AuthenticatedHoldingsRoute
+  '/_authenticated/market': typeof AuthenticatedMarketRoute
   '/_authenticated/openalgo': typeof AuthenticatedOpenalgoRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
+  '/_authenticated/strategies': typeof AuthenticatedStrategiesRoute
   '/_authenticated/tradingview': typeof AuthenticatedTradingviewRoute
   '/_authenticated/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -174,9 +192,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/funds'
     | '/holdings'
+    | '/market'
     | '/openalgo'
     | '/positions'
     | '/signals'
+    | '/strategies'
     | '/tradingview'
     | '/orders/$orderid'
     | '/orders/'
@@ -191,9 +211,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/funds'
     | '/holdings'
+    | '/market'
     | '/openalgo'
     | '/positions'
     | '/signals'
+    | '/strategies'
     | '/tradingview'
     | '/orders/$orderid'
     | '/orders'
@@ -209,9 +231,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/funds'
     | '/_authenticated/holdings'
+    | '/_authenticated/market'
     | '/_authenticated/openalgo'
     | '/_authenticated/positions'
     | '/_authenticated/signals'
+    | '/_authenticated/strategies'
     | '/_authenticated/tradingview'
     | '/_authenticated/orders/$orderid'
     | '/_authenticated/orders/'
@@ -291,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHoldingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/market': {
+      id: '/_authenticated/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AuthenticatedMarketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/openalgo': {
       id: '/_authenticated/openalgo'
       path: '/openalgo'
@@ -310,6 +341,13 @@ declare module '@tanstack/react-router' {
       path: '/signals'
       fullPath: '/signals'
       preLoaderRoute: typeof AuthenticatedSignalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/strategies': {
+      id: '/_authenticated/strategies'
+      path: '/strategies'
+      fullPath: '/strategies'
+      preLoaderRoute: typeof AuthenticatedStrategiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tradingview': {
@@ -349,9 +387,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFundsRoute: typeof AuthenticatedFundsRoute
   AuthenticatedHoldingsRoute: typeof AuthenticatedHoldingsRoute
+  AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
   AuthenticatedOpenalgoRoute: typeof AuthenticatedOpenalgoRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
+  AuthenticatedStrategiesRoute: typeof AuthenticatedStrategiesRoute
   AuthenticatedTradingviewRoute: typeof AuthenticatedTradingviewRoute
   AuthenticatedOrdersOrderidRoute: typeof AuthenticatedOrdersOrderidRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
@@ -363,9 +403,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFundsRoute: AuthenticatedFundsRoute,
   AuthenticatedHoldingsRoute: AuthenticatedHoldingsRoute,
+  AuthenticatedMarketRoute: AuthenticatedMarketRoute,
   AuthenticatedOpenalgoRoute: AuthenticatedOpenalgoRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
+  AuthenticatedStrategiesRoute: AuthenticatedStrategiesRoute,
   AuthenticatedTradingviewRoute: AuthenticatedTradingviewRoute,
   AuthenticatedOrdersOrderidRoute: AuthenticatedOrdersOrderidRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
