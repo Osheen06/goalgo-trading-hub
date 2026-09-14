@@ -42,11 +42,27 @@ See `.env.example` for the full list of names. Nothing shows live data until
 `GOALGO_WEBHOOK_TOKEN`, `APP_URL` and `GOALGO_OWNER_USER_ID` are set on the
 server.
 
+## Production deployment (Ubuntu 24 VPS)
+
+```sh
+git clone <repo> /opt/goalgo/src && cd /opt/goalgo/src
+sudo ./deploy/deploy.sh          # creates /etc/goalgo/goalgo.env, then stops
+sudo nano /etc/goalgo/goalgo.env # fill in the secrets
+sudo ./deploy/deploy.sh --ssl    # build, service, nginx, Let's Encrypt
+./deploy/health-check.sh https://app.goalgo.fairwoodit.com
+```
+
+`deploy/` also contains `update.sh` (pull + rebuild + auto-rollback),
+`rollback.sh`, `health-check.sh`, the systemd unit, the nginx site and the
+production env template. The scripts never touch the existing OpenAlgo
+installation on the same server.
+
 ## Documentation
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — components, OpenAlgo contract, data model
 - [SECURITY.md](./SECURITY.md) — secret handling, validation, audit policy
-- [DEPLOYMENT.md](./DEPLOYMENT.md) — Ubuntu 24 VPS, Nginx, TLS, systemd, rollback
+- [DEPLOYMENT.md](./DEPLOYMENT.md) — exact copy-paste VPS procedure, TLS, rollback, troubleshooting
+
 
 ## Safety
 

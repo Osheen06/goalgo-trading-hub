@@ -35,3 +35,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Production deployment config (secrets live here — never commit)
+goalgo.env
+deploy/*.env
+!deploy/goalgo.env.example
+*.pem
+*.key

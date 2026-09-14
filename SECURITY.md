@@ -62,3 +62,17 @@ unauthenticated endpoint and is token-protected.
 Report suspected issues to the company's internal security contact. Rotate
 `OPENALGO_API_KEY` and `GOALGO_WEBHOOK_TOKEN` immediately if either is exposed,
 then restart the GOALGO service.
+
+## Secrets at rest in production
+
+All production secrets live in `/etc/goalgo/goalgo.env`, mode `600`, owner
+`root:goalgo`, read only by systemd when starting the service. They are not in
+git (`.gitignore` covers `.env*`, `goalgo.env`, `*.pem`, `*.key`), not in the
+browser bundle (only `APP_URL` and the two `VITE_SUPABASE_*` publishable values
+are client-visible), not in URLs, not in `localStorage`, and never printed by
+the deploy, update, rollback or health-check scripts. Broker credentials are
+never held by GOALGO at all — they exist only inside OpenAlgo.
+
+The health endpoint returns booleans only; its deeper OpenAlgo probe requires
+the `x-goalgo-token` header so it cannot be used to fingerprint or flood the
+trading server.
