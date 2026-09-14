@@ -37,18 +37,18 @@ bun run dev            # http://localhost:8080
 
 ## Required configuration
 
-See `.env.example` for the full list of names. Nothing shows live data until
-`OPENALGO_BASE_URL`, `OPENALGO_API_KEY`, `OPENALGO_STRATEGY_WEBHOOK_URL`,
-`GOALGO_WEBHOOK_TOKEN`, `APP_URL` and `GOALGO_OWNER_USER_ID` are set on the
-server.
+See `.env.example` for the full list of names. On the VPS, `deploy.sh` fills in
+everything it can derive (`APP_URL`, `OPENALGO_BASE_URL`, the public Supabase
+values) and generates `GOALGO_WEBHOOK_TOKEN`; it asks only for the OpenAlgo API
+key and, optionally, the Supabase service-role key and the OpenAlgo strategy
+webhook URL. There is no `GOALGO_OWNER_USER_ID` to set — the first account that
+registers becomes the owner of the deployment and registration then closes.
 
 ## Production deployment (Ubuntu 24 VPS)
 
 ```sh
 git clone <repo> /opt/goalgo/src && cd /opt/goalgo/src
-sudo ./deploy/deploy.sh          # creates /etc/goalgo/goalgo.env, then stops
-sudo nano /etc/goalgo/goalgo.env # fill in the secrets
-sudo ./deploy/deploy.sh --ssl    # build, service, nginx, Let's Encrypt
+sudo ./deploy/deploy.sh          # checks, secrets prompt, build, service, nginx, TLS
 ./deploy/health-check.sh https://app.goalgo.fairwoodit.com
 ```
 
