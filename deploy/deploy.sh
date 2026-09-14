@@ -8,12 +8,19 @@
 #   sudo ./deploy/deploy.sh --skip-dns   # deploy before DNS has propagated
 #   ./deploy/deploy.sh --dry-run         # run all checks + env setup, change nothing else
 #
+# Architecture (single public domain, no extra DNS record):
+#   https://goalgo.fairwoodit.com/  -> GOALGO   (127.0.0.1:3000, this script)
+#   OpenAlgo                        -> 127.0.0.1:5000, private, not published
+#   GOALGO talks to OpenAlgo over localhost only.
+#
 # Safety guarantees:
 #   * Touches ONLY /opt/goalgo, /etc/goalgo, the goalgo systemd unit and the
-#     app.goalgo.fairwoodit.com nginx site.
-#   * Never reads, edits, reloads or restarts the existing OpenAlgo install,
-#     its nginx server block, its certificate or its database.
-#   * Refuses to continue if the chosen port or hostname is already in use.
+#     goalgo.fairwoodit.com nginx site.
+#   * Never reads, edits, reloads or restarts the OpenAlgo service, its .env,
+#     its certificate or its database. If OpenAlgo's installer left an nginx
+#     site claiming this domain, the symlink is disabled (the file is kept)
+#     so one vhost owns the hostname — nothing is deleted.
+#   * Refuses to continue if the chosen port is already in use by someone else.
 #   * Idempotent: existing secrets, releases, services and certificates are
 #     preserved; only missing pieces are created.
 #   * Every release lands in its own directory; `current` is a symlink, so
@@ -21,9 +28,12 @@
 # ---------------------------------------------------------------------------
 set -euo pipefail
 
-DOMAIN="${GOALGO_DOMAIN:-app.goalgo.fairwoodit.com}"
+DOMAIN="${GOALGO_DOMAIN:-goalgo.fairwoodit.com}"
 EXPECTED_IP="${GOALGO_EXPECTED_IP:-210.56.147.234}"
-OPENALGO_URL_DEFAULT="${GOALGO_OPENALGO_URL:-https://goalgo.fairwoodit.com}"
+OPENALGO_URL_DEFAULT="${GOALGO_OPENALGO_URL:-http://127.0.0.1:5000}"
+# Optional, space separated: public paths that must reach OpenAlgo directly
+# (broker OAuth callbacks only). Empty by default — OpenAlgo stays private.
+OPENALGO_PUBLIC_PATHS="${OPENALGO_PUBLIC_PATHS:-}"
 APP_ROOT="${GOALGO_ROOT:-/opt/goalgo}"
 ENV_FILE="${GOALGO_ENV_FILE:-/etc/goalgo/goalgo.env}"
 SERVICE="goalgo"
@@ -145,30 +155,42 @@ if [ "$DO_DNS" -eq 0 ]; then
 else
   RESOLVED="$( { getent ahostsv4 "$DOMAIN" 2>/dev/null || true; } | awk '{print $1}' | sort -u | tr '\n' ' ' | sed 's/ $//')"
   if [ -z "$RESOLVED" ]; then
-    die "$DOMAIN does not resolve yet. MANUAL ACTION: create this DNS record at your domain provider, wait a few minutes, then re-run:
-           Type: A    Name: app    Value: $EXPECTED_IP    TTL: 300
+    die "$DOMAIN does not resolve yet. MANUAL ACTION: confirm this existing DNS record at your domain provider, wait a few minutes, then re-run:
+           Type: A    Name: goalgo (or @, as your zone requires)    Value: $EXPECTED_IP    TTL: 300
          (Deploy anyway without HTTPS using: sudo ./deploy/deploy.sh --skip-dns)"
   elif ! grep -qw "$EXPECTED_IP" <<<"$RESOLVED"; then
     die "$DOMAIN resolves to '$RESOLVED' but this deployment expects $EXPECTED_IP.
-         MANUAL ACTION: fix the A record (Type: A, Name: app, Value: $EXPECTED_IP) or re-run with GOALGO_EXPECTED_IP=<correct ip>."
+         MANUAL ACTION: fix the A record (Type: A, Name: goalgo, Value: $EXPECTED_IP) or re-run with GOALGO_EXPECTED_IP=<correct ip>."
   else
     ok "$DOMAIN -> $EXPECTED_IP"
   fi
 fi
 
-# --- 3. OpenAlgo safety check ----------------------------------------------
-step "Verifying the existing OpenAlgo installation is untouched"
+# --- 3. OpenAlgo safety check (private, localhost only) ---------------------
+step "Checking the local OpenAlgo service (never modified by this script)"
 OA_HOST="$(sed -E 's#^https?://##; s#/.*$##' <<<"$OPENALGO_URL_DEFAULT")"
-[ "$OA_HOST" != "$DOMAIN" ] || die "GOALGO domain ($DOMAIN) is identical to the OpenAlgo domain ($OA_HOST). Refusing to continue — OpenAlgo must keep its own hostname."
+case "$OA_HOST" in
+  127.0.0.1|localhost|"[::1]") ok "OPENALGO_BASE_URL is local ($OPENALGO_URL_DEFAULT) — OpenAlgo is not published" ;;
+  *) echo "  [warn] OPENALGO_BASE_URL points at $OA_HOST, not localhost. The single-domain design expects http://127.0.0.1:5000." ;;
+esac
 OA_CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$OPENALGO_URL_DEFAULT" || true)"
 if [ "$OA_CODE" = "000" ]; then
-  echo "  [warn] $OPENALGO_URL_DEFAULT did not answer from this host — GOALGO will still deploy, but check OpenAlgo separately."
+  echo "  [warn] $OPENALGO_URL_DEFAULT did not answer. GOALGO will still deploy and will honestly report OpenAlgo as unreachable."
+  echo "         Check it with: systemctl status openalgo ; journalctl -u openalgo -n 100 --no-pager"
 else
-  ok "OpenAlgo at $OPENALGO_URL_DEFAULT answers HTTP $OA_CODE (left untouched)"
+  ok "OpenAlgo answers on $OPENALGO_URL_DEFAULT (HTTP $OA_CODE) — service left untouched"
 fi
 if [ "$DO_NGINX" -eq 1 ] && [ -d /etc/nginx/sites-enabled ]; then
-  OA_SITE="$(grep -rl "server_name[^;]*\b${OA_HOST}\b" /etc/nginx/sites-enabled/ 2>/dev/null | head -n1 || true)"
-  [ -n "$OA_SITE" ] && ok "OpenAlgo nginx site detected at $OA_SITE — this script will not modify it"
+  # OpenAlgo's official installer may have created its own vhost for this same
+  # hostname. Only one vhost can own it. Disable the symlink, keep the file.
+  while IFS= read -r site; do
+    [ -n "$site" ] || continue
+    [ "$(basename "$site")" = "$DOMAIN" ] && continue
+    # Removing the symlink only. The configuration file in sites-available and
+    # any certificate it references stay exactly where they are.
+    rm -f "$site"
+    ok "another vhost claimed $DOMAIN ($site) — symlink disabled; the file in sites-available is untouched"
+  done < <(grep -rl "server_name[^;]*\b${DOMAIN}\b" /etc/nginx/sites-enabled/ 2>/dev/null || true)
 fi
 
 # --- 4. port conflict detection --------------------------------------------
@@ -297,22 +319,44 @@ ok "local health: $HEALTH"
 
 # --- 10. nginx --------------------------------------------------------------
 if [ "$DO_NGINX" -eq 1 ]; then
-  step "Configuring nginx for $DOMAIN (OpenAlgo's site is left untouched)"
-  CONFLICT="$(grep -rl "server_name[^;]*\b${DOMAIN}\b" /etc/nginx/sites-enabled/ 2>/dev/null \
-              | grep -v "${DOMAIN}$" || true)"
-  [ -z "$CONFLICT" ] || die "another nginx site already claims $DOMAIN: $CONFLICT — resolve manually"
+  step "Configuring the single public vhost for $DOMAIN (OpenAlgo stays private)"
   cp "$SRC_DIR/deploy/nginx-goalgo.conf" /etc/nginx/sites-available/"$DOMAIN".src
   if [ -f /etc/nginx/sites-available/"$DOMAIN" ]; then
     skip "existing /etc/nginx/sites-available/$DOMAIN kept (certbot may manage it); reference copy saved as ${DOMAIN}.src"
   else
     if [ -d "/etc/letsencrypt/live/$DOMAIN" ]; then
-      sed -e "s#proxy_pass http://127.0.0.1:3000;#proxy_pass http://127.0.0.1:${PORT};#g" \
+      sed -e "s#server_name goalgo.fairwoodit.com;#server_name ${DOMAIN};#g" \
+          -e "s#/etc/letsencrypt/live/goalgo.fairwoodit.com/#/etc/letsencrypt/live/${DOMAIN}/#g" \
+          -e "s#proxy_pass http://127.0.0.1:3000;#proxy_pass http://127.0.0.1:${PORT};#g" \
           "$SRC_DIR/deploy/nginx-goalgo.conf" > /etc/nginx/sites-available/"$DOMAIN"
     else
       # Before certificates exist, serve plain HTTP only; certbot adds TLS later.
       printf 'server {\n    listen 80;\n    listen [::]:80;\n    server_name %s;\n    location /.well-known/acme-challenge/ { root /var/www/html; }\n    location / {\n        proxy_pass http://127.0.0.1:%s;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection $connection_upgrade;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n}\n' "$DOMAIN" "$PORT" > /etc/nginx/sites-available/"$DOMAIN"
     fi
     ok "created /etc/nginx/sites-available/$DOMAIN"
+  fi
+
+  # Optional: expose ONLY the exact broker OAuth callback paths to OpenAlgo.
+  # Nothing else of OpenAlgo is ever published.
+  if [ -n "$OPENALGO_PUBLIC_PATHS" ]; then
+    if grep -q "goalgo-openalgo-callbacks" /etc/nginx/sites-available/"$DOMAIN"; then
+      skip "OpenAlgo callback passthrough already present (kept)"
+    else
+      BLOCK="$(mktemp)"
+      { echo "    # goalgo-openalgo-callbacks — broker OAuth callbacks only"
+        for p in $OPENALGO_PUBLIC_PATHS; do
+          printf '    location = %s {\n        proxy_pass http://127.0.0.1:5000;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n' "$p"
+        done
+      } > "$BLOCK"
+      awk -v blockfile="$BLOCK" '
+        /^[[:space:]]*location \/ \{[[:space:]]*$/ && !done { while ((getline l < blockfile) > 0) print l; done=1 }
+        { print }' /etc/nginx/sites-available/"$DOMAIN" > "$BLOCK.out"
+      cat "$BLOCK.out" > /etc/nginx/sites-available/"$DOMAIN"
+      rm -f "$BLOCK" "$BLOCK.out"
+      ok "broker callback passthrough added for: $OPENALGO_PUBLIC_PATHS"
+    fi
+  else
+    skip "OpenAlgo not exposed publicly (set OPENALGO_PUBLIC_PATHS only if your broker needs a public callback)"
   fi
   # Required http{}-level directives, added in a separate file so nginx.conf is untouched.
   if ! grep -rq "zone=goalgo_hook" /etc/nginx/conf.d/ /etc/nginx/nginx.conf 2>/dev/null; then
