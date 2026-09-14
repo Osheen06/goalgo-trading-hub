@@ -149,7 +149,13 @@ function AuthPage() {
     });
     if (error) {
       setBusy(false);
-      toast.error(`Google sign-in failed: ${error.message}`);
+      // The provider is switched on but has no credentials of its own yet.
+      if (/unsupported provider|missing oauth secret|provider is not enabled/i.test(error.message)) {
+        setGoogleAvailable(false);
+        toast.error("Google sign-in is not set up on this deployment yet. Use your email and password.");
+      } else {
+        toast.error(`Google sign-in failed: ${error.message}`);
+      }
     }
     // On success the browser navigates away to Google.
   };
