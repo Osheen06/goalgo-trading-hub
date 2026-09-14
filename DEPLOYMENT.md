@@ -16,13 +16,17 @@ Names live in `.env.example`; real values are entered on the server and never co
 | `OPENALGO_BASE_URL` | Address of your OpenAlgo instance, e.g. `http://127.0.0.1:5000` | Your OpenAlgo install |
 | `OPENALGO_API_KEY` | OpenAlgo API key | OpenAlgo → API key page |
 | `OPENALGO_STRATEGY_WEBHOOK_URL` | OpenAlgo strategy webhook, `.../strategy/webhook/<token>` | OpenAlgo → your strategy |
-| `GOALGO_WEBHOOK_TOKEN` | Shared secret TradingView must send to GOALGO | You generate it (`openssl rand -hex 32`) |
-| `GOALGO_OWNER_USER_ID` | The GOALGO account inbound signals belong to | Copy from the Activity page after first sign-in |
-| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Database and auth | Provisioned automatically by Lovable Cloud |
+| `GOALGO_WEBHOOK_TOKEN` | Shared secret TradingView must send to GOALGO | **Generated automatically** by `deploy.sh` |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Public database/auth configuration | **Filled automatically** by `deploy.sh` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Privileged database key, used only to record inbound webhooks | Asked interactively (optional) |
+| `GOALGO_OWNER_USER_ID` | Not required | The first registered account becomes the owner automatically |
 
-Credentials you must enter by hand, once: the OpenAlgo API key, the OpenAlgo strategy
-webhook URL, and the GOALGO webhook secret. Broker credentials are entered **only** in
-OpenAlgo, never in GOALGO.
+`deploy.sh` writes every value it can derive (`APP_URL`, `OPENALGO_BASE_URL`, the public
+Supabase values, `NODE_ENV`/`PORT`/`HOST`), generates `GOALGO_WEBHOOK_TOKEN` with
+`openssl rand -hex 32`, and asks with hidden input only for what it cannot know:
+the OpenAlgo API key (required), the Supabase service-role key (optional) and the
+OpenAlgo strategy webhook URL (optional — OpenAlgo exposes no API that lists it).
+Broker credentials are entered **only** in OpenAlgo, never in GOALGO.
 
 ---
 
@@ -75,34 +79,38 @@ git clone <your-repo-url> /opt/goalgo/src
 cd /opt/goalgo/src
 ```
 
-### 3.3 First run — creates the secrets file and stops
+### 3.3 Deploy — one command
 
 ```sh
 sudo ./deploy/deploy.sh
 ```
 
-It writes `/etc/goalgo/goalgo.env` (chmod 600) from the template and stops,
-telling you to fill it in.
+The script asks, with hidden input, for the OpenAlgo API key (required) and for
+two optional values you can also skip and add later by re-running it: the
+Supabase service-role key and the OpenAlgo strategy webhook URL. Everything else
+— including the webhook token — is generated or derived automatically and stored
+in `/etc/goalgo/goalgo.env` (mode 600, root:goalgo). No manual file editing.
 
-### 3.4 Enter the production secrets
-
-```sh
-sudo nano /etc/goalgo/goalgo.env
-openssl rand -hex 32      # use this value for GOALGO_WEBHOOK_TOKEN
-```
-
-Fill every variable listed in `deploy/goalgo.env.example`. This file is the
-only place production secrets exist; it is never in git, never in the browser
-bundle and never printed by any script.
-
-### 3.5 Deploy for real
+Re-running is safe: existing secrets, releases, the service, the nginx site and
+the certificate are preserved, and only missing pieces are created.
 
 ```sh
-sudo ./deploy/deploy.sh          # build + service + nginx on port 80
-sudo ./deploy/deploy.sh --ssl    # once DNS resolves: adds the Let's Encrypt cert
+sudo ./deploy/deploy.sh --skip-dns   # deploy before the DNS record exists (HTTP only)
+sudo ./deploy/deploy.sh --ssl        # force a certificate request later
+./deploy/deploy.sh --dry-run         # run every check and the env setup, change nothing else
 ```
 
-`deploy.sh` validates prerequisites, refuses to run if the port is taken by
+Unattended alternative (values come from the environment, never shell history if
+you prefix the command with a space):
+
+```sh
+ OPENALGO_API_KEY=... SUPABASE_SERVICE_ROLE_KEY=... sudo -E ./deploy/deploy.sh
+```
+
+`deploy.sh` checks the Ubuntu version and Node version, verifies DNS for
+`app.goalgo.fairwoodit.com` points at `210.56.147.234` (and stops with the exact
+record to create if it does not), confirms `https://goalgo.fairwoodit.com` still
+answers and that its nginx site and hostname are left alone, refuses to run if the port is taken by
 another process, builds a timestamped release under `/opt/goalgo/releases`,
 points `/opt/goalgo/current` at it, installs and starts the `goalgo` systemd
 service, writes only the `app.goalgo.fairwoodit.com` nginx site, runs
@@ -124,7 +132,11 @@ Expected: `ALL CHECKS PASSED`, health JSON with
 `"openalgoConfigured":true,"webhookConfigured":true,"databaseConfigured":true`,
 and with the token also `"openalgo":{"reachable":true,...}`.
 
-Then open `https://app.goalgo.fairwoodit.com` and sign in.
+Then open `https://app.goalgo.fairwoodit.com` and **create the first account**.
+That account becomes the owner of this deployment automatically (recorded in the
+`app_owner` table), inbound signals are attributed to it, and registration closes
+itself — later sign-up attempts are refused by the database and the sign-up tab
+disables itself. No user ID to copy, no service restart.
 
 ### 3.7 Day-to-day operations
 
@@ -192,7 +204,8 @@ database is never touched.
 | OpenAlgo connected, broker “Authentication required” | Broker session expired — log in again inside OpenAlgo |
 | Signals arrive but nothing is forwarded | Automated trading is off, or `OPENALGO_STRATEGY_WEBHOOK_URL` is unset |
 | TradingView reports 401 | Alert URL is missing or has the wrong `token` |
-| Signals recorded with no owner | `GOALGO_OWNER_USER_ID` is unset |
+| Webhook replies 503 “Signal storage is not configured” | `SUPABASE_SERVICE_ROLE_KEY` is unset — re-run `sudo ./deploy/deploy.sh` and supply it |
+| “Registration closed” on the sign-in page | Expected — the owner account already exists |
 | 502 Bad Gateway | GOALGO service down or on a different port than nginx proxies to |
 | Certbot fails | DNS for `app.goalgo.fairwoodit.com` does not resolve to the VPS yet |
 
@@ -221,7 +234,7 @@ sudo ./deploy/rollback.sh                    # last resort: previous release
 - [ ] All server environment variables set
 - [ ] Database migrations applied
 - [ ] HTTPS live on app.goalgo.fairwoodit.com (OpenAlgo still answering on goalgo.fairwoodit.com), no ngrok
-- [ ] Owner account created and `GOALGO_OWNER_USER_ID` set
+- [ ] First account created in GOALGO (it becomes the owner automatically)
 - [ ] OpenAlgo and Broker pages both verified
 - [ ] TradingView alert delivered end to end
 - [ ] Automated trading switch tested off and on
