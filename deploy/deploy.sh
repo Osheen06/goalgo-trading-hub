@@ -349,7 +349,7 @@ if [ "$DO_NGINX" -eq 1 ]; then
         done
       } > "$BLOCK"
       awk -v blockfile="$BLOCK" '
-        /^[[:space:]]*location \/ \{/ && !done { while ((getline l < blockfile) > 0) print l; done=1 }
+        /^[[:space:]]*location \/ \{[[:space:]]*$/ && !done { while ((getline l < blockfile) > 0) print l; done=1 }
         { print }' /etc/nginx/sites-available/"$DOMAIN" > "$BLOCK.out"
       cat "$BLOCK.out" > /etc/nginx/sites-available/"$DOMAIN"
       rm -f "$BLOCK" "$BLOCK.out"
