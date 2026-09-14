@@ -1,3 +1,5 @@
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
 /** Shapes returned by the OpenAlgo v1 API (browser-safe types only). */
 
 export type ConnectionState =

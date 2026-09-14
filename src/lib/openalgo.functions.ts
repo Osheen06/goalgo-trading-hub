@@ -7,6 +7,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import type {
   ApiEnvelope,
+  Json,
   Funds,
   HoldingsPayload,
   OrderbookPayload,
@@ -174,10 +175,10 @@ export const getOrderStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({ orderid: z.string().min(1).max(64), strategy: z.string().max(64).optional() }).parse(d),
   )
-  .handler(async ({ data }): Promise<ApiEnvelope<Record<string, unknown>>> => {
+  .handler(async ({ data }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(
-      await oaPost<Record<string, unknown>>("/orderstatus", {
+      await oaPost<Record<string, Json>>("/orderstatus", {
         orderid: data.orderid,
         strategy: data.strategy ?? "GOALGO",
       }),
@@ -189,9 +190,9 @@ export const cancelOrder = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({ orderid: z.string().min(1).max(64), strategy: z.string().max(64).optional() }).parse(d),
   )
-  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, unknown>>> => {
+  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
-    const res = await oaPost<Record<string, unknown>>("/cancelorder", {
+    const res = await oaPost<Record<string, Json>>("/cancelorder", {
       orderid: data.orderid,
       strategy: data.strategy ?? "GOALGO",
     });
@@ -207,9 +208,9 @@ export const cancelOrder = createServerFn({ method: "POST" })
 export const closeAllPositions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ strategy: z.string().max(64).optional() }).parse(d))
-  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, unknown>>> => {
+  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
-    const res = await oaPost<Record<string, unknown>>("/closeposition", {
+    const res = await oaPost<Record<string, Json>>("/closeposition", {
       strategy: data.strategy ?? "GOALGO",
     });
     await writeAudit(
@@ -224,9 +225,9 @@ export const closeAllPositions = createServerFn({ method: "POST" })
 export const cancelAllOrders = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ strategy: z.string().max(64).optional() }).parse(d))
-  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, unknown>>> => {
+  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
-    const res = await oaPost<Record<string, unknown>>("/cancelallorder", {
+    const res = await oaPost<Record<string, Json>>("/cancelallorder", {
       strategy: data.strategy ?? "GOALGO",
     });
     await writeAudit(
@@ -257,9 +258,9 @@ export const strategyAction = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, unknown>>> => {
+  .handler(async ({ data, context }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
-    const res = await oaPost<Record<string, unknown>>(`/strategy/${data.action}`, {
+    const res = await oaPost<Record<string, Json>>(`/strategy/${data.action}`, {
       strategy_id: data.strategy_id,
     });
     await writeAudit(
@@ -297,11 +298,11 @@ export const searchSymbols = createServerFn({ method: "POST" })
       .object({ query: z.string().min(1).max(40), exchange: z.string().max(16).optional() })
       .parse(d),
   )
-  .handler(async ({ data }): Promise<ApiEnvelope<unknown>> => {
+  .handler(async ({ data }): Promise<ApiEnvelope<Json>> => {
     const { oaPost } = await import("./openalgo/client.server");
-    const body: Record<string, unknown> = { query: data.query };
+    const body: Record<string, Json> = { query: data.query };
     if (data.exchange) body["exchange"] = data.exchange;
-    return envelope(await oaPost<unknown>("/search", body));
+    return envelope(await oaPost<Json>("/search", body));
   });
 
 export const getQuote = createServerFn({ method: "POST" })
@@ -309,10 +310,10 @@ export const getQuote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({ symbol: z.string().min(1).max(40), exchange: z.string().min(1).max(16) }).parse(d),
   )
-  .handler(async ({ data }): Promise<ApiEnvelope<Record<string, unknown>>> => {
+  .handler(async ({ data }): Promise<ApiEnvelope<Record<string, Json>>> => {
     const { oaPost } = await import("./openalgo/client.server");
     return envelope(
-      await oaPost<Record<string, unknown>>("/quotes", {
+      await oaPost<Record<string, Json>>("/quotes", {
         symbol: data.symbol,
         exchange: data.exchange,
       }),
