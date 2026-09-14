@@ -7,6 +7,8 @@ import { cancelOrder, getOrderStatus } from "@/lib/openalgo.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { DataGate, PageHeader, Panel } from "@/components/goalgo/primitives";
 import { OrderStatusBadge } from "@/components/goalgo/status-badges";
+import { OrderTicket } from "@/components/goalgo/order-ticket";
+
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
