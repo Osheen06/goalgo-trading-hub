@@ -98,3 +98,11 @@ sign-up tab once the owner exists.
 shell history by the script, and never printed in any log line or summary. The
 webhook token is generated with `openssl rand -hex 32` and reused on every later
 deployment run.
+
+## Note on the committed `.env`
+
+The Lovable workspace tracks a `.env` file that contains **only public values**
+(`SUPABASE_URL`, `SUPABASE_PROJECT_ID`, `SUPABASE_PUBLISHABLE_KEY` and their
+`VITE_` twins) — the same values shipped in the browser bundle. No server-side
+secret is ever written there: production secrets exist only in
+`/etc/goalgo/goalgo.env` on the VPS. Any other `.env*` file is git-ignored.
