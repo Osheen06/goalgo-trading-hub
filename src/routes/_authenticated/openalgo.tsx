@@ -77,6 +77,10 @@ function OpenAlgoPage() {
 
   const s = status.data;
   const lastSuccess = history?.find((h) => h.status === "connected") ?? null;
+  // Preview/dev runtimes have no access to the private OpenAlgo server. Never
+  // present that as a missing production configuration.
+  const preview = config.data?.environment === "preview" || s?.environment === "preview";
+  const missing = preview ? "Production only" : "Not configured";
 
   return (
     <>
