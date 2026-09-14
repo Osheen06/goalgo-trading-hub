@@ -79,18 +79,40 @@ OpenAlgo remains the source of truth.
 
 ## Production topology (single VPS, 210.56.147.234)
 
+The VPS hosts **two independent applications**. As of the last server
+inspection OpenAlgo is not yet installed there; it is installed with its own
+official installer during Phase 2 of `DEPLOYMENT.md`.
+
 ```text
                       ┌──────────────── Ubuntu 24 VPS ────────────────┐
 browser ── HTTPS ──►  │ nginx :443                                    │
-                      │  ├─ goalgo.fairwoodit.com      → OpenAlgo     │  (pre-existing, untouched)
+                      │  ├─ goalgo.fairwoodit.com      → 127.0.0.1:5000
+                      │  │                                systemd: openalgo
+                      │  │                                /var/python/openalgo
                       │  └─ app.goalgo.fairwoodit.com  → 127.0.0.1:3000
                       │                                   systemd: goalgo
+                      │                                   /opt/goalgo
 TradingView ─ POST ──►│  /api/public/webhooks/tradingview (token, rate limited)
                       │            │                                  │
                       │            └─► OpenAlgo strategy webhook ─► broker
                       └───────────────────────────────────────────────┘
                                    GOALGO ──► Supabase (managed Postgres + Auth)
 ```
+
+| | OpenAlgo | GOALGO |
+| --- | --- | --- |
+| Installed by | official `install/install.sh` (marketcalls/openalgo) | `deploy/deploy.sh` in this repo |
+| Root | `/var/python/openalgo` | `/opt/goalgo` |
+| Service | `openalgo` | `goalgo` |
+| Config | `/var/python/openalgo/.env` | `/etc/goalgo/goalgo.env` |
+| Data | its own SQLite/Postgres store | Supabase (app metadata only) |
+| nginx vhost | `sites-available/openalgo.conf` | `sites-available/app.goalgo.fairwoodit.com` |
+| Certificate | its own Let's Encrypt cert | its own Let's Encrypt cert |
+| Holds broker credentials | yes | never |
+
+Neither deployment writes to the other's files, service, database, vhost or
+certificate. `deploy/install-openalgo.sh` refuses to run at all when an OpenAlgo
+install is already present.
 
 The GOALGO Node server (Nitro `node_server` build, `.output/server/index.mjs`)
 binds to localhost only; nginx is the sole public listener. Releases live in
