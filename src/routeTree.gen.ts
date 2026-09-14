@@ -14,12 +14,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
+import { Route as AuthenticatedBrokerRouteImport } from './routes/_authenticated/broker'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFundsRouteImport } from './routes/_authenticated/funds'
 import { Route as AuthenticatedHoldingsRouteImport } from './routes/_authenticated/holdings'
 import { Route as AuthenticatedOpenalgoRouteImport } from './routes/_authenticated/openalgo'
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
+import { Route as AuthenticatedTradingviewRouteImport } from './routes/_authenticated/tradingview'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
 import { Route as AuthenticatedOrdersOrderidRouteImport } from './routes/_authenticated/orders.$orderid'
 import { Route as ApiPublicWebhooksTradingviewRouteImport } from './routes/api/public/webhooks/tradingview'
@@ -46,6 +48,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBrokerRoute = AuthenticatedBrokerRouteImport.update({
+  id: '/broker',
+  path: '/broker',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -78,6 +85,12 @@ const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
   path: '/signals',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTradingviewRoute =
+  AuthenticatedTradingviewRouteImport.update({
+    id: '/tradingview',
+    path: '/tradingview',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOrdersIndexRoute =
   AuthenticatedOrdersIndexRouteImport.update({
     id: '/orders/',
@@ -102,12 +115,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/broker': typeof AuthenticatedBrokerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
   '/holdings': typeof AuthenticatedHoldingsRoute
   '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/signals': typeof AuthenticatedSignalsRoute
+  '/tradingview': typeof AuthenticatedTradingviewRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
@@ -117,12 +132,14 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/broker': typeof AuthenticatedBrokerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/funds': typeof AuthenticatedFundsRoute
   '/holdings': typeof AuthenticatedHoldingsRoute
   '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
   '/signals': typeof AuthenticatedSignalsRoute
+  '/tradingview': typeof AuthenticatedTradingviewRoute
   '/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
@@ -134,12 +151,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/broker': typeof AuthenticatedBrokerRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/funds': typeof AuthenticatedFundsRoute
   '/_authenticated/holdings': typeof AuthenticatedHoldingsRoute
   '/_authenticated/openalgo': typeof AuthenticatedOpenalgoRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
+  '/_authenticated/tradingview': typeof AuthenticatedTradingviewRoute
   '/_authenticated/orders/$orderid': typeof AuthenticatedOrdersOrderidRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/webhooks/tradingview': typeof ApiPublicWebhooksTradingviewRoute
@@ -151,12 +170,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/activity'
+    | '/broker'
     | '/dashboard'
     | '/funds'
     | '/holdings'
     | '/openalgo'
     | '/positions'
     | '/signals'
+    | '/tradingview'
     | '/orders/$orderid'
     | '/orders/'
     | '/api/public/webhooks/tradingview'
@@ -166,12 +187,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/activity'
+    | '/broker'
     | '/dashboard'
     | '/funds'
     | '/holdings'
     | '/openalgo'
     | '/positions'
     | '/signals'
+    | '/tradingview'
     | '/orders/$orderid'
     | '/orders'
     | '/api/public/webhooks/tradingview'
@@ -182,12 +205,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/activity'
+    | '/_authenticated/broker'
     | '/_authenticated/dashboard'
     | '/_authenticated/funds'
     | '/_authenticated/holdings'
     | '/_authenticated/openalgo'
     | '/_authenticated/positions'
     | '/_authenticated/signals'
+    | '/_authenticated/tradingview'
     | '/_authenticated/orders/$orderid'
     | '/_authenticated/orders/'
     | '/api/public/webhooks/tradingview'
@@ -238,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/broker': {
+      id: '/_authenticated/broker'
+      path: '/broker'
+      fullPath: '/broker'
+      preLoaderRoute: typeof AuthenticatedBrokerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -280,6 +312,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSignalsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tradingview': {
+      id: '/_authenticated/tradingview'
+      path: '/tradingview'
+      fullPath: '/tradingview'
+      preLoaderRoute: typeof AuthenticatedTradingviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/orders/': {
       id: '/_authenticated/orders/'
       path: '/orders'
@@ -306,24 +345,28 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedBrokerRoute: typeof AuthenticatedBrokerRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFundsRoute: typeof AuthenticatedFundsRoute
   AuthenticatedHoldingsRoute: typeof AuthenticatedHoldingsRoute
   AuthenticatedOpenalgoRoute: typeof AuthenticatedOpenalgoRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
+  AuthenticatedTradingviewRoute: typeof AuthenticatedTradingviewRoute
   AuthenticatedOrdersOrderidRoute: typeof AuthenticatedOrdersOrderidRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedBrokerRoute: AuthenticatedBrokerRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFundsRoute: AuthenticatedFundsRoute,
   AuthenticatedHoldingsRoute: AuthenticatedHoldingsRoute,
   AuthenticatedOpenalgoRoute: AuthenticatedOpenalgoRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
+  AuthenticatedTradingviewRoute: AuthenticatedTradingviewRoute,
   AuthenticatedOrdersOrderidRoute: AuthenticatedOrdersOrderidRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
 }
