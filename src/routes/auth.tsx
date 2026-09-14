@@ -97,9 +97,18 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) {
-      toast.error(error.message);
+      // The database refuses extra accounts on a single-trader deployment.
+      const closed = /database error|registration is closed/i.test(error.message);
+      if (closed) {
+        setRegistrationOpen(false);
+        setMode("signin");
+        toast.error("This GOALGO deployment already has an owner account. Sign in instead.");
+      } else {
+        toast.error(error.message);
+      }
       return;
     }
+
     if (data.session) {
       navigate({ to: "/dashboard" });
     } else {
