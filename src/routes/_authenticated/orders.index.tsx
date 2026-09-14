@@ -118,6 +118,14 @@ function OrdersPage() {
             <Button size="sm" variant="secondary" onClick={() => void q.refetch()}>
               Refresh
             </Button>
+            <OrderTicket
+              mode="place"
+              triggerLabel="Place order"
+              disabled={!tradingReady}
+              disabledReason={tradingReady ? undefined : notReadyReason}
+              onDone={() => void queryClient.invalidateQueries({ queryKey: ["orderbook"] })}
+            />
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button size="sm" variant="destructive">
