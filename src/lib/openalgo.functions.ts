@@ -113,6 +113,7 @@ export const getSystemStatus = createServerFn({ method: "POST" })
 
     return {
       configured: true,
+      environment,
       baseUrl: getOpenAlgoBaseUrl() ?? null,
       openalgo,
       broker,
@@ -388,6 +389,7 @@ export const getQuote = createServerFn({ method: "POST" })
 export const getIntegrationConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (): Promise<{
+    environment: "production" | "preview";
     openalgoBaseUrl: string | null;
     openalgoApiKeyConfigured: boolean;
     webhookTokenConfigured: boolean;
@@ -396,9 +398,11 @@ export const getIntegrationConfig = createServerFn({ method: "POST" })
     appUrl: string | null;
   }> => {
     const { getOpenAlgoBaseUrl } = await import("./openalgo/client.server");
+    const { resolveEnvironment } = await import("./openalgo/status");
     const appUrl = process.env["APP_URL"]?.replace(/\/+$/, "") || null;
     const tokenSet = Boolean(process.env["GOALGO_WEBHOOK_TOKEN"]);
     return {
+      environment: resolveEnvironment(process.env),
       openalgoBaseUrl: getOpenAlgoBaseUrl() ?? null,
       openalgoApiKeyConfigured: Boolean(process.env["OPENALGO_API_KEY"]),
       webhookTokenConfigured: tokenSet,
