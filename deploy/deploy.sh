@@ -186,9 +186,10 @@ if [ "$DO_NGINX" -eq 1 ] && [ -d /etc/nginx/sites-enabled ]; then
   while IFS= read -r site; do
     [ -n "$site" ] || continue
     [ "$(basename "$site")" = "$DOMAIN" ] && continue
-    mv -f "$site" "/etc/nginx/sites-available/$(basename "$site").disabled-by-goalgo" 2>/dev/null \
-      || rm -f "$site"
-    ok "another vhost claimed $DOMAIN ($site) — its symlink was disabled; the file in sites-available is untouched"
+    # Removing the symlink only. The configuration file in sites-available and
+    # any certificate it references stay exactly where they are.
+    rm -f "$site"
+    ok "another vhost claimed $DOMAIN ($site) — symlink disabled; the file in sites-available is untouched"
   done < <(grep -rl "server_name[^;]*\b${DOMAIN}\b" /etc/nginx/sites-enabled/ 2>/dev/null || true)
 fi
 
