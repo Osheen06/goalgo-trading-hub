@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated")({
   },
   component: () => (
     <AppShell>
+      <BrokerAccessNotice />
       <Outlet />
     </AppShell>
   ),
