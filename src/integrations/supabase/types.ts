@@ -205,8 +205,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_broker_operator: { Args: { _user_id: string }; Returns: boolean }
-      registration_open: { Args: never; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
