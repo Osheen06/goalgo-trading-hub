@@ -41,8 +41,13 @@ See `.env.example` for the full list of names. On the VPS, `deploy.sh` fills in
 everything it can derive (`APP_URL`, `OPENALGO_BASE_URL`, the public Supabase
 values) and generates `GOALGO_WEBHOOK_TOKEN`; it asks only for the OpenAlgo API
 key and, optionally, the Supabase service-role key and the OpenAlgo strategy
-webhook URL. There is no `GOALGO_OWNER_USER_ID` to set — the first account that
-registers becomes the owner of the deployment and registration then closes.
+webhook URL. Registration is open: anyone can create an account with email and password and
+gets a private, isolated workspace. The first account registered on a
+deployment stays linked to that installation's single OpenAlgo/broker
+connection (the "trading account"); other accounts see their own data only and
+have no access to broker funds, orders, positions or order actions.
+`GOALGO_OWNER_USER_ID` only overrides which account TradingView signals are
+attributed to.
 
 ## Production deployment (Ubuntu 24 VPS)
 
