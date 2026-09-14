@@ -21,6 +21,7 @@ import { Route as AuthenticatedHoldingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
 import { Route as AuthenticatedOpenalgoRouteImport } from './routes/_authenticated/openalgo'
 import { Route as AuthenticatedPositionsRouteImport } from './routes/_authenticated/positions'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
 import { Route as AuthenticatedStrategiesRouteImport } from './routes/_authenticated/strategies'
 import { Route as AuthenticatedTradingviewRouteImport } from './routes/_authenticated/tradingview'
@@ -87,6 +88,11 @@ const AuthenticatedPositionsRoute = AuthenticatedPositionsRouteImport.update({
   path: '/positions',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
   id: '/signals',
   path: '/signals',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/market': typeof AuthenticatedMarketRoute
   '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/market': typeof AuthenticatedMarketRoute
   '/openalgo': typeof AuthenticatedOpenalgoRoute
   '/positions': typeof AuthenticatedPositionsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/signals': typeof AuthenticatedSignalsRoute
   '/strategies': typeof AuthenticatedStrategiesRoute
   '/tradingview': typeof AuthenticatedTradingviewRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/_authenticated/market': typeof AuthenticatedMarketRoute
   '/_authenticated/openalgo': typeof AuthenticatedOpenalgoRoute
   '/_authenticated/positions': typeof AuthenticatedPositionsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRoute
   '/_authenticated/strategies': typeof AuthenticatedStrategiesRoute
   '/_authenticated/tradingview': typeof AuthenticatedTradingviewRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/market'
     | '/openalgo'
     | '/positions'
+    | '/settings'
     | '/signals'
     | '/strategies'
     | '/tradingview'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/market'
     | '/openalgo'
     | '/positions'
+    | '/settings'
     | '/signals'
     | '/strategies'
     | '/tradingview'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/_authenticated/market'
     | '/_authenticated/openalgo'
     | '/_authenticated/positions'
+    | '/_authenticated/settings'
     | '/_authenticated/signals'
     | '/_authenticated/strategies'
     | '/_authenticated/tradingview'
@@ -336,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPositionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/signals': {
       id: '/_authenticated/signals'
       path: '/signals'
@@ -390,6 +409,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
   AuthenticatedOpenalgoRoute: typeof AuthenticatedOpenalgoRoute
   AuthenticatedPositionsRoute: typeof AuthenticatedPositionsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
   AuthenticatedStrategiesRoute: typeof AuthenticatedStrategiesRoute
   AuthenticatedTradingviewRoute: typeof AuthenticatedTradingviewRoute
@@ -406,6 +426,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMarketRoute: AuthenticatedMarketRoute,
   AuthenticatedOpenalgoRoute: AuthenticatedOpenalgoRoute,
   AuthenticatedPositionsRoute: AuthenticatedPositionsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
   AuthenticatedStrategiesRoute: AuthenticatedStrategiesRoute,
   AuthenticatedTradingviewRoute: AuthenticatedTradingviewRoute,
