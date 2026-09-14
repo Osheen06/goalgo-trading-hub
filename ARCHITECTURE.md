@@ -76,3 +76,23 @@ OpenAlgo remains the source of truth.
   an audit row.
 - Success is reported only when OpenAlgo returns `status: "success"`.
 - Connection checks use read-only endpoints and never place orders.
+
+## Production topology (single VPS, 210.56.147.234)
+
+```text
+                      ┌──────────────── Ubuntu 24 VPS ────────────────┐
+browser ── HTTPS ──►  │ nginx :443                                    │
+                      │  ├─ goalgo.fairwoodit.com      → OpenAlgo     │  (pre-existing, untouched)
+                      │  └─ app.goalgo.fairwoodit.com  → 127.0.0.1:3000
+                      │                                   systemd: goalgo
+TradingView ─ POST ──►│  /api/public/webhooks/tradingview (token, rate limited)
+                      │            │                                  │
+                      │            └─► OpenAlgo strategy webhook ─► broker
+                      └───────────────────────────────────────────────┘
+                                   GOALGO ──► Supabase (managed Postgres + Auth)
+```
+
+The GOALGO Node server (Nitro `node_server` build, `.output/server/index.mjs`)
+binds to localhost only; nginx is the sole public listener. Releases live in
+`/opt/goalgo/releases/<timestamp>` with `/opt/goalgo/current` as the active
+symlink, so a rollback is a symlink swap plus a service restart.
