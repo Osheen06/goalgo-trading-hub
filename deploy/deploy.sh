@@ -233,6 +233,9 @@ env_default NODE_ENV production                        "NODE_ENV"
 env_default PORT "$PORT"                               "PORT"
 env_default HOST 127.0.0.1                             "HOST"
 env_default APP_URL "https://${DOMAIN}"                "APP_URL (https://${DOMAIN})"
+# Same value, exposed to the browser bundle so auth redirects are built from the
+# real production origin instead of whatever host the page happens to be served on.
+env_default VITE_PUBLIC_APP_URL "https://${DOMAIN}"    "VITE_PUBLIC_APP_URL (https://${DOMAIN})"
 env_default OPENALGO_BASE_URL "$OPENALGO_URL_DEFAULT"  "OPENALGO_BASE_URL ($OPENALGO_URL_DEFAULT)"
 env_default SUPABASE_URL "$SUPABASE_URL_DEFAULT"       "SUPABASE_URL (public)"
 env_default VITE_SUPABASE_URL "$SUPABASE_URL_DEFAULT"  "VITE_SUPABASE_URL (public)"
@@ -265,7 +268,7 @@ prompt_secret OPENALGO_STRATEGY_WEBHOOK_URL \
 
 MISSING=()
 for key in OPENALGO_BASE_URL OPENALGO_API_KEY GOALGO_WEBHOOK_TOKEN SUPABASE_URL \
-           VITE_SUPABASE_URL VITE_SUPABASE_PUBLISHABLE_KEY APP_URL; do
+           VITE_SUPABASE_URL VITE_SUPABASE_PUBLISHABLE_KEY APP_URL VITE_PUBLIC_APP_URL; do
   env_has "$key" || MISSING+=("$key")
 done
 [ "${#MISSING[@]}" -eq 0 ] || die "these variables are still empty in $ENV_FILE: ${MISSING[*]}"
@@ -289,7 +292,7 @@ chown -R "$APP_USER:$APP_USER" "$RELEASE"
 # Build-time public variables come from the env file.
 set -a; # shellcheck disable=SC1090
 source <(grep -E '^(VITE_[A-Z0-9_]+|APP_URL)=' "$ENV_FILE"); set +a
-sudo -u "$APP_USER" --preserve-env=VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY,APP_URL \
+sudo -u "$APP_USER" --preserve-env=VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY,VITE_PUBLIC_APP_URL,APP_URL \
   bash -lc "cd '$RELEASE' && npm ci --no-audit --no-fund && NITRO_PRESET=node_server npm run build" \
   || die "build failed (see output above) — the previous release is still live"
 [ -f "$RELEASE/.output/server/index.mjs" ] || die "build produced no Node server output — check NITRO_PRESET support"
