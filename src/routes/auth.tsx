@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { currentAppOrigin, currentAuthRedirect } from "@/lib/auth-redirect";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,7 +85,7 @@ function AuthPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: currentAuthRedirect("/dashboard"),
         data: { full_name: name },
       },
     });
@@ -114,7 +115,7 @@ function AuthPage() {
     }
     setBusy(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: currentAuthRedirect("/reset-password"),
     });
     setBusy(false);
     if (error) toast.error(error.message);
@@ -127,8 +128,12 @@ function AuthPage() {
   const google = async () => {
     setBusy(true);
     // Diagnostic only — an origin, never a token, secret or key.
-    const redirectTo = `${window.location.origin}/auth/callback`;
-    console.info("[GOALGO auth] Google sign-in redirectTo:", redirectTo);
+    const appOrigin = currentAppOrigin();
+    const redirectTo = `${appOrigin.origin}/auth/callback`;
+    console.info(
+      `[GOALGO auth] Google sign-in redirectTo (${appOrigin.environment}, ${appOrigin.source}):`,
+      redirectTo,
+    );
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },
